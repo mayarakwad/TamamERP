@@ -19,6 +19,28 @@ datasource db {
 
 // ───────────────────────── Platform ─────────────────────────
 
+/// One row (id = 1) describing this installation. Missing row + no users means
+/// a fresh install, which sends visitors to the setup wizard.
+model SystemSetting {
+  id            Int       @id @default(1)
+  /// Name shown on the sign-in page and browser tab (white-label)
+  instanceName  String    @default("Tamam")
+  defaultLocale String    @default("en")
+  timezone      String    @default("Asia/Qatar")
+  currency      String    @default("QAR")
+  /// Anyone may create a workspace from the sign-up page
+  allowSignup   Boolean   @default(true)
+  /// Demo workspaces are installed (enables the demo accounts on sign-in)
+  demoData      Boolean   @default(false)
+  /// SHA-256 of the one-time setup key; cleared once installed
+  setupKeyHash  String?
+  installedAt   DateTime?
+  installedById String?
+  version       String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
 model User {
   id           String    @id @default(cuid())
   email        String    @unique
@@ -31,6 +53,8 @@ model User {
   preferences  Json?
   lastOrgId    String?
   lastLoginAt  DateTime?
+  /// Manages this installation (created by the setup wizard)
+  isSystemAdmin Boolean  @default(false)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 

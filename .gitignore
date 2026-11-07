@@ -45,6 +45,7 @@ next-env.d.ts
 # local data (SQLite database, uploaded files)
 /data/*.db
 /data/*.db-*
+/data/setup-key.txt
 /storage/*
 !/storage/.gitkeep
 

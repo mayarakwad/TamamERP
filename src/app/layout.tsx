@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "@fontsource-variable/readex-pro";
 import "./globals.css";
 import { getRequestPrefs } from "@/lib/auth/dal";
+import { getSystem } from "@/lib/system";
 import { htmlAttributes, htmlStyle, SCHEME_SCRIPT } from "@/lib/prefs-dom";
 import { AppProviders } from "@/components/providers";
 import { InlineScript } from "@/components/inline-script";
@@ -10,11 +11,14 @@ import { InlineScript } from "@/components/inline-script";
 // person), so the root may block on the request instead of prerendering a shell.
 export const instant = false;
 
-export const metadata: Metadata = {
-  title: { default: "Tamam", template: "%s · Tamam" },
-  description: "An ERP for businesses, schools and homes in Qatar that feels alive.",
-  applicationName: "Tamam",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { instanceName } = await getSystem();
+  return {
+    title: { default: instanceName, template: `%s · ${instanceName}` },
+    description: "An ERP for businesses, schools and homes in Qatar that feels alive.",
+    applicationName: instanceName,
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: [

@@ -21,9 +21,16 @@ export function WorkspaceSwitcher({ data, compact }: { data: ShellData; compact?
         )}
         aria-label={t("shell.switchWorkspace")}
       >
-        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-accent text-accent-fg shadow-sm">
-          <OrgIcon type={data.orgType} className="size-5" />
-        </span>
+        {data.logoUrl ? (
+          <span className="grid size-10 shrink-0 place-items-center overflow-hidden rounded-xl border border-line bg-white shadow-sm">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={data.logoUrl} alt="" className="size-full object-contain p-1" />
+          </span>
+        ) : (
+          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-accent text-accent-fg shadow-sm">
+            <OrgIcon type={data.orgType} className="size-5" />
+          </span>
+        )}
         {!compact && (
           <>
             <span className="min-w-0 flex-1">

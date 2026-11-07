@@ -22,7 +22,7 @@ interface DemoAccount {
 
 const typeIcon = { home: Home, business: Building2, school: GraduationCap };
 
-export function LoginForm({ next, demo }: { next: string; demo: DemoAccount[] }) {
+export function LoginForm({ next, demo, allowSignup }: { next: string; demo: DemoAccount[]; allowSignup: boolean }) {
   const { t, locale } = useI18n();
   const [state, action, pending] = useActionState<FormState, FormData>(login, {});
   const [show, setShow] = useState(false);
@@ -84,12 +84,14 @@ export function LoginForm({ next, demo }: { next: string; demo: DemoAccount[] })
         </Button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-muted">
-        {t("auth.noAccount")}{" "}
-        <Link href="/signup" className="font-medium text-accent hover:underline">
-          {t("auth.createAccount")}
-        </Link>
-      </p>
+      {allowSignup && (
+        <p className="mt-6 text-center text-sm text-muted">
+          {t("auth.noAccount")}{" "}
+          <Link href="/signup" className="font-medium text-accent hover:underline">
+            {t("auth.createAccount")}
+          </Link>
+        </p>
+      )}
 
       {demo.length > 0 && (
         <section className="mt-10">

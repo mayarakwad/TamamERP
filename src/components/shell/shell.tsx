@@ -3,7 +3,7 @@
 import { useState, useSyncExternalStore } from "react";
 import { Dialog, Direction } from "radix-ui";
 import { Menu, PanelLeftClose, PanelLeftOpen, Search, Sparkles, X, FlaskConical } from "lucide-react";
-import { useI18n } from "@/components/providers";
+import { useI18n, WorkspaceFormat } from "@/components/providers";
 import { QuickToggles } from "@/components/appearance/quick-toggles";
 import { LiveWallpaper } from "@/components/appearance/live-wallpaper";
 import { Sidebar, SidebarNav } from "./sidebar";
@@ -52,6 +52,7 @@ export function Shell({ data, children }: { data: ShellData; children: React.Rea
 
   return (
     <Direction.Provider dir={dir}>
+      <WorkspaceFormat currency={data.currency} timeZone={data.timezone}>
       <a href="#content" className="sr-only focus:not-sr-only focus:fixed focus:start-3 focus:top-3 focus:z-50 focus:rounded-lg focus:bg-surface focus:px-3 focus:py-2">
         {t("shell.skipToContent")}
       </a>
@@ -139,6 +140,7 @@ export function Shell({ data, children }: { data: ShellData; children: React.Rea
 
       <CommandPalette data={data} open={paletteOpen} onOpenChange={setPaletteOpen} />
       <FlowSheet open={flowOpen} onOpenChange={setFlowOpen} />
+      </WorkspaceFormat>
     </Direction.Provider>
   );
 }

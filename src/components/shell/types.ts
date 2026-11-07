@@ -6,6 +6,10 @@ export interface ShellData {
   orgNameAr: string | null;
   orgType: OrgType;
   isSandbox: boolean;
+  currency: string;
+  timezone: string;
+  /** URL of the organization's logo, if one was uploaded */
+  logoUrl: string | null;
   campusCount: number;
   role: Role;
   title: string | null;

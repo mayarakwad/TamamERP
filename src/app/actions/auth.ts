@@ -11,6 +11,7 @@ import { parsePrefs } from "@/lib/prefs";
 import { writePrefsCookie } from "./prefs";
 import { createHomeDefaults } from "@/lib/demo/home";
 import { isOrgType } from "@/lib/rbac";
+import { getSystem } from "@/lib/system";
 
 export interface FormState {
   error?: string;
@@ -116,6 +117,8 @@ async function uniqueSlug(name: string) {
 }
 
 export async function signup(_prev: FormState, formData: FormData): Promise<FormState> {
+  const system = await getSystem();
+  if (!system.installed || !system.allowSignup) return { error: "signup.closed" };
   const raw = Object.fromEntries(
     ["type", "orgName", "orgNameAr", "campuses", "locale", "name", "email", "password"].map((k) => [k, String(formData.get(k) ?? "")]),
   );

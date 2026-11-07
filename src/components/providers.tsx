@@ -90,6 +90,19 @@ export function AppProviders({ initialPrefs, children }: { initialPrefs: Prefs; 
   );
 }
 
+/**
+ * Inside a workspace, money and dates follow that workspace's currency and
+ * time zone (set in the setup wizard or workspace settings).
+ */
+export function WorkspaceFormat({ currency, timeZone, children }: { currency: string; timeZone: string; children: React.ReactNode }) {
+  const parent = useI18n();
+  const value = useMemo<I18nContextValue>(
+    () => ({ ...parent, fmt: createFormatter({ locale: parent.locale, digits: parent.fmt.config.digits, currency, timeZone }) }),
+    [parent, currency, timeZone],
+  );
+  return <I18nContext value={value}>{children}</I18nContext>;
+}
+
 export function usePrefs() {
   const ctx = use(PrefsContext);
   if (!ctx) throw new Error("usePrefs must be used inside AppProviders");

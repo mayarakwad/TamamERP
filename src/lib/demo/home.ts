@@ -1,10 +1,11 @@
 // Demo + default data for Home workspaces. Used by the seed script and by
 // signup (defaults only). No server-only imports, so plain Node can run it.
 
-import type { PrismaClient } from "../../generated/prisma/client";
+import type { Prisma, PrismaClient } from "../../generated/prisma/client";
 import { rng, daysAgo, atHour, type Rng } from "./random";
 
-type Db = PrismaClient;
+/** Works with the client or inside a transaction. */
+type Db = PrismaClient | Prisma.TransactionClient;
 
 export const DEFAULT_CATEGORIES = [
   { key: "groceries", name: "Groceries", nameAr: "البقالة", icon: "shopping-cart", color: "#2E9E6B", budget: 4500 },

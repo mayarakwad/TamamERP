@@ -1,10 +1,11 @@
 // The three demo workspaces and the people in them. Some people belong to
 // more than one workspace on purpose: one login, many worlds.
 
-import type { PrismaClient } from "../../generated/prisma/client";
+import type { Prisma, PrismaClient } from "../../generated/prisma/client";
 import { seedHomeDemo } from "./home";
 
-type Db = PrismaClient;
+/** Works with the client or inside a transaction. */
+type Db = PrismaClient | Prisma.TransactionClient;
 
 export const DEMO_PASSWORD = "demo1234";
 
