@@ -309,7 +309,7 @@ function PayModal({ slug, bill, onClose }: { slug: string; bill: Bill; onClose: 
 function BillForm({ slug, bill, categories, onClose }: { slug: string; bill: Bill | null; categories: { id: string; name: string; nameAr: string; icon: string }[]; onClose: () => void }) {
   const { t, locale } = useI18n();
   const billsCat = categories.find((c) => c.name.toLowerCase().startsWith("bills"))?.id ?? categories[0]?.id ?? "";
-  const [form, setForm] = useState<BillInput>({
+  const [form, setForm] = useState<BillInput>(() => ({
     name: bill?.name ?? "",
     nameAr: bill?.nameAr ?? "",
     provider: bill?.provider ?? "",
@@ -321,7 +321,7 @@ function BillForm({ slug, bill, categories, onClose }: { slug: string; bill: Bil
     remindDaysBefore: bill?.remindDaysBefore ?? 3,
     autopay: bill?.autopay ?? false,
     notes: bill?.notes ?? "",
-  });
+  }));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pending, start] = useTransition();
   const save = () =>
