@@ -39,3 +39,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/src/generated/prisma
+
+# local data (SQLite database, uploaded files)
+/data/*.db
+/data/*.db-*
+/storage/*
+!/storage/.gitkeep
+
+# test output
+/test-results/
+/playwright-report/

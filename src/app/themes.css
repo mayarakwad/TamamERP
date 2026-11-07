@@ -1,0 +1,192 @@
+/*
+ * Theme tokens. Each theme has a light and a dark palette.
+ * <html data-theme="pearl" data-scheme="dark"> selects one; a custom accent
+ * is applied as an inline style on <html> and overrides --accent.
+ */
+
+/* ── Pearl (default): Qatar maroon on warm pearl ── */
+:root,
+[data-theme="pearl"] {
+  --bg: #f7f4f1;
+  --surface: #ffffff;
+  --sunken: #f0ebe6;
+  --line: #e6ded6;
+  --fg: #1f1a17;
+  --muted: #6b625c;
+  --subtle: #9a918a;
+  --accent: #8a1538;
+  --accent-fg: #ffffff;
+}
+[data-theme="pearl"][data-scheme="dark"] {
+  --bg: #141113;
+  --surface: #1d191b;
+  --sunken: #100e0f;
+  --line: #2e282b;
+  --fg: #f3eeea;
+  --muted: #b1a8a2;
+  --subtle: #7d746f;
+  --accent: #e26a8a;
+  --accent-fg: #2a0712;
+}
+
+/* ── Corniche: sea blue ── */
+[data-theme="corniche"] {
+  --bg: #f3f7f9;
+  --surface: #ffffff;
+  --sunken: #e9f0f3;
+  --line: #d9e4ea;
+  --fg: #0f1e26;
+  --muted: #557080;
+  --subtle: #8ba2af;
+  --accent: #0b6e8a;
+  --accent-fg: #ffffff;
+}
+[data-theme="corniche"][data-scheme="dark"] {
+  --bg: #0b1419;
+  --surface: #111d24;
+  --sunken: #081014;
+  --line: #1e2f38;
+  --fg: #e6f1f5;
+  --muted: #93aebb;
+  --subtle: #5f7a87;
+  --accent: #38b2d3;
+  --accent-fg: #04212b;
+}
+
+/* ── Oasis: palm green ── */
+[data-theme="oasis"] {
+  --bg: #f4f7f2;
+  --surface: #ffffff;
+  --sunken: #eaf0e6;
+  --line: #dae4d4;
+  --fg: #142016;
+  --muted: #5a6e5c;
+  --subtle: #93a394;
+  --accent: #1f7a4d;
+  --accent-fg: #ffffff;
+}
+[data-theme="oasis"][data-scheme="dark"] {
+  --bg: #0e1510;
+  --surface: #141e17;
+  --sunken: #0a100c;
+  --line: #223126;
+  --fg: #e7f1e9;
+  --muted: #9bb3a0;
+  --subtle: #64796a;
+  --accent: #4cc38a;
+  --accent-fg: #062014;
+}
+
+/* ── Dunes: sand and terracotta ── */
+[data-theme="dunes"] {
+  --bg: #faf5ee;
+  --surface: #fffdf9;
+  --sunken: #f3eadf;
+  --line: #eadccb;
+  --fg: #2a1e14;
+  --muted: #7a6553;
+  --subtle: #a8937f;
+  --accent: #b5541c;
+  --accent-fg: #ffffff;
+}
+[data-theme="dunes"][data-scheme="dark"] {
+  --bg: #17120d;
+  --surface: #201912;
+  --sunken: #120e0a;
+  --line: #33281e;
+  --fg: #f5ece2;
+  --muted: #c0ac98;
+  --subtle: #8a7766;
+  --accent: #e58a4e;
+  --accent-fg: #2b1305;
+}
+
+/* ── Majlis: deep indigo ── */
+[data-theme="majlis"] {
+  --bg: #f5f4fa;
+  --surface: #ffffff;
+  --sunken: #eceaf5;
+  --line: #dedbec;
+  --fg: #1b1830;
+  --muted: #625d80;
+  --subtle: #9894b3;
+  --accent: #4b3fa8;
+  --accent-fg: #ffffff;
+}
+[data-theme="majlis"][data-scheme="dark"] {
+  --bg: #100e1c;
+  --surface: #171528;
+  --sunken: #0b0a14;
+  --line: #2a2742;
+  --fg: #eceaf8;
+  --muted: #a6a1c6;
+  --subtle: #6f6a92;
+  --accent: #8c80f0;
+  --accent-fg: #120e33;
+}
+
+/* ── Lantern: amber gold ── */
+[data-theme="lantern"] {
+  --bg: #fbf8f1;
+  --surface: #ffffff;
+  --sunken: #f4eedf;
+  --line: #ebe2cd;
+  --fg: #241d0f;
+  --muted: #73674c;
+  --subtle: #a49878;
+  --accent: #8f5d00;
+  --accent-fg: #ffffff;
+}
+[data-theme="lantern"][data-scheme="dark"] {
+  --bg: #15120b;
+  --surface: #1e1a10;
+  --sunken: #100d08;
+  --line: #322b1b;
+  --fg: #f7f0de;
+  --muted: #c2b494;
+  --subtle: #8c7f62;
+  --accent: #f0b43c;
+  --accent-fg: #2a1c00;
+}
+
+/* ── Shared tokens (status colours, charts, shadows) ── */
+:root {
+  --success: #1f8a4c;
+  --warning: #b7791f;
+  --danger: #c2362f;
+  --info: #2563eb;
+  --chart-1: var(--accent);
+  --chart-2: #2f7db8;
+  --chart-3: #e0a030;
+  --chart-4: #2e9e6b;
+  --chart-5: #8e5cc9;
+  --chart-6: #d9644a;
+  --shadow-sm: 0 1px 2px rgb(30 20 10 / 0.05);
+  --shadow-md: 0 1px 2px rgb(30 20 10 / 0.04), 0 6px 20px -6px rgb(30 20 10 / 0.1);
+  --shadow-lg: 0 2px 6px rgb(30 20 10 / 0.06), 0 18px 40px -12px rgb(30 20 10 / 0.18);
+  --glass: color-mix(in oklch, var(--surface) 82%, transparent);
+  color-scheme: light;
+}
+[data-scheme="dark"] {
+  --success: #4cc38a;
+  --warning: #f0b43c;
+  --danger: #f2706a;
+  --info: #6ea8fe;
+  --chart-2: #6aaee6;
+  --chart-3: #f2c060;
+  --chart-4: #5ccb98;
+  --chart-5: #b48beb;
+  --chart-6: #f08b73;
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-md: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -8px rgb(0 0 0 / 0.5);
+  --shadow-lg: 0 2px 8px rgb(0 0 0 / 0.35), 0 20px 48px -12px rgb(0 0 0 / 0.6);
+  --glass: color-mix(in oklch, var(--surface) 78%, transparent);
+  color-scheme: dark;
+}
+
+/* Derived from the (possibly custom) accent on the same element. */
+:root {
+  --accent-soft: color-mix(in oklch, var(--accent) 13%, var(--surface));
+  --accent-line: color-mix(in oklch, var(--accent) 35%, var(--line));
+  --ring: color-mix(in oklch, var(--accent) 55%, transparent);
+}

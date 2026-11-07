@@ -1,0 +1,377 @@
+// Tamam data model.
+//
+// Conventions (keep these when adding models):
+// - Every business row carries `orgId`, so one database can hold many workspaces.
+// - Money is stored as whole dirhams (1 QAR = 100 dirhams) in Int columns.
+//   No floats, no provider-specific decimals: the schema moves to Postgres as-is.
+// - "Enums" are plain strings validated in code (src/lib/*), which keeps SQLite
+//   and Postgres migrations identical.
+// - Bilingual display names use `name` + `nameAr`.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ───────────────────────── Platform ─────────────────────────
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  nameAr       String?
+  passwordHash String
+  phone        String?
+  avatarColor  String?
+  /// Appearance + language choices. Shape: src/lib/prefs.ts
+  preferences  Json?
+  lastOrgId    String?
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  memberships   Membership[]
+  sessions      Session[]
+  notifications Notification[]
+  claims        Claim[]        @relation("ClaimSubmitter")
+  decisions     Claim[]        @relation("ClaimDecider")
+  comments      Comment[]
+  files         Attachment[]
+}
+
+model Organization {
+  id         String   @id @default(cuid())
+  /// business | school | home
+  type       String
+  name       String
+  nameAr     String?
+  slug       String   @unique
+  currency   String   @default("QAR")
+  timezone   String   @default("Asia/Qatar")
+  /// Language used for printed documents when the reader has no preference
+  locale     String   @default("en")
+  /// 0 = Sunday … 6 = Saturday
+  weekStart  Int      @default(0)
+  /// Comma-separated weekday numbers, Qatar default Friday + Saturday
+  weekend    String   @default("5,6")
+  logoPath   String?
+  brandColor String?
+  address    String?
+  addressAr  String?
+  phone      String?
+  email      String?
+  /// Commercial registration number (businesses) or MoEHE licence (schools)
+  crNumber   String?
+  isSandbox  Boolean  @default(false)
+  settings   Json?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  campuses      Campus[]
+  memberships   Membership[]
+  auditLogs     AuditLog[]
+  notifications Notification[]
+  categories    ExpenseCategory[]
+  claims        Claim[]
+  budgets       Budget[]
+  bills         RecurringBill[]
+  billPayments  BillPayment[]
+  possessions   Possession[]
+  comments      Comment[]
+  attachments   Attachment[]
+  series        NamingSeries[]
+}
+
+/// A campus (schools) or branch (businesses). Optional for homes.
+model Campus {
+  id        String   @id @default(cuid())
+  orgId     String
+  name      String
+  nameAr    String?
+  code      String
+  address   String?
+  addressAr String?
+  color     String?
+  createdAt DateTime @default(now())
+
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  memberships Membership[]
+
+  @@unique([orgId, code])
+}
+
+model Membership {
+  id              String   @id @default(cuid())
+  userId          String
+  orgId           String
+  /// owner | admin | accountant | teacher | parent | employee | member
+  role            String
+  /// null = every campus
+  campusId        String?
+  /// Free-text job title shown in the UI ("Principal", "Head of household")
+  title           String?
+  titleAr         String?
+  /// active | invited | disabled
+  status          String   @default("active")
+  /// Ordered widget ids + hidden widgets for this person in this workspace
+  dashboardLayout Json?
+  createdAt       DateTime @default(now())
+
+  user   User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  org    Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  campus Campus?      @relation(fields: [campusId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, orgId])
+  @@index([orgId])
+}
+
+model Session {
+  /// SHA-256 of the random token kept in the cookie; the raw token is never stored
+  id        String   @id
+  userId    String
+  expiresAt DateTime
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  email     String
+  ip        String?
+  success   Boolean
+  createdAt DateTime @default(now())
+
+  @@index([email, createdAt])
+  @@index([ip, createdAt])
+}
+
+/// Who changed what and when. Doubles as each record's activity timeline
+/// (filter by entityType + entityId) and as the security log (sensitive = true).
+model AuditLog {
+  id         String   @id @default(cuid())
+  orgId      String?
+  userId     String?
+  action     String
+  entityType String?
+  entityId   String?
+  summary    String?
+  summaryAr  String?
+  meta       Json?
+  sensitive  Boolean  @default(false)
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  org Organization? @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId, createdAt])
+  @@index([entityType, entityId])
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  orgId     String
+  userId    String
+  kind      String
+  title     String
+  titleAr   String?
+  body      String?
+  bodyAr    String?
+  href      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  org  Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  user User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+}
+
+model Comment {
+  id         String   @id @default(cuid())
+  orgId      String
+  entityType String
+  entityId   String
+  authorId   String
+  body       String
+  createdAt  DateTime @default(now())
+
+  org    Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  author User         @relation(fields: [authorId], references: [id])
+
+  @@index([entityType, entityId])
+}
+
+model Attachment {
+  id           String   @id @default(cuid())
+  orgId        String
+  entityType   String
+  entityId     String
+  fileName     String
+  mimeType     String
+  size         Int
+  /// Path inside STORAGE_DIR
+  path         String
+  width        Int?
+  height       Int?
+  uploadedById String
+  createdAt    DateTime @default(now())
+
+  org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  uploadedBy User         @relation(fields: [uploadedById], references: [id])
+
+  @@index([entityType, entityId])
+}
+
+/// Document numbering such as CLM-2026-00042
+model NamingSeries {
+  orgId   String
+  key     String
+  year    Int
+  current Int    @default(0)
+
+  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@id([orgId, key, year])
+}
+
+// ───────────────────────── Home ─────────────────────────
+
+model ExpenseCategory {
+  id       String  @id @default(cuid())
+  orgId    String
+  key      String
+  name     String
+  nameAr   String
+  icon     String
+  color    String
+  sort     Int     @default(0)
+  archived Boolean @default(false)
+
+  org     Organization    @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  claims  Claim[]
+  budgets Budget[]
+  bills   RecurringBill[]
+
+  @@unique([orgId, key])
+}
+
+model Claim {
+  id            String    @id @default(cuid())
+  orgId         String
+  number        String
+  submittedById String
+  categoryId    String
+  /// dirhams
+  amount        Int
+  merchant      String
+  spentOn       DateTime
+  note          String?
+  /// draft | submitted | approved | rejected | reimbursed
+  status        String    @default("submitted")
+  /// cash | card | transfer
+  paidWith      String    @default("card")
+  decidedById   String?
+  decidedAt     DateTime?
+  decisionNote  String?
+  reimbursedAt  DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+
+  org         Organization    @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  submittedBy User            @relation("ClaimSubmitter", fields: [submittedById], references: [id])
+  decidedBy   User?           @relation("ClaimDecider", fields: [decidedById], references: [id])
+  category    ExpenseCategory @relation(fields: [categoryId], references: [id])
+
+  @@unique([orgId, number])
+  @@index([orgId, spentOn])
+  @@index([orgId, status])
+}
+
+/// Monthly budget per category. month = "2026-11"; month = "default" applies
+/// to any month without its own row.
+model Budget {
+  id         String @id @default(cuid())
+  orgId      String
+  categoryId String
+  month      String
+  amount     Int
+
+  org      Organization    @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  category ExpenseCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId, categoryId, month])
+}
+
+model RecurringBill {
+  id               String   @id @default(cuid())
+  orgId            String
+  name             String
+  nameAr           String?
+  provider         String?
+  categoryId       String
+  /// Typical amount in dirhams; variable bills (electricity) are estimates
+  amount           Int
+  variable         Boolean  @default(false)
+  /// monthly | quarterly | yearly
+  frequency        String   @default("monthly")
+  nextDue          DateTime
+  remindDaysBefore Int      @default(3)
+  autopay          Boolean  @default(false)
+  active           Boolean  @default(true)
+  notes            String?
+  createdAt        DateTime @default(now())
+
+  org      Organization    @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  category ExpenseCategory @relation(fields: [categoryId], references: [id])
+  payments BillPayment[]
+}
+
+model BillPayment {
+  id       String    @id @default(cuid())
+  orgId    String
+  billId   String
+  dueOn    DateTime
+  paidOn   DateTime?
+  amount   Int
+  /// due | paid | skipped
+  status   String    @default("due")
+  paidById String?
+
+  org  Organization  @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  bill RecurringBill @relation(fields: [billId], references: [id], onDelete: Cascade)
+
+  @@index([orgId, dueOn])
+}
+
+/// Things the household owns, with warranty tracking
+model Possession {
+  id            String    @id @default(cuid())
+  orgId         String
+  name          String
+  nameAr        String?
+  category      String
+  room          String?
+  brand         String?
+  model         String?
+  serial        String?
+  purchasedOn   DateTime?
+  price         Int?
+  store         String?
+  warrantyUntil DateTime?
+  notes         String?
+  createdAt     DateTime  @default(now())
+
+  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId, warrantyUntil])
+}
