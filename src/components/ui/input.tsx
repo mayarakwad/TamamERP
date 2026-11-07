@@ -1,7 +1,10 @@
 import { cn } from "@/lib/cn";
 
-export const inputClass =
-  "w-full h-11 rounded-xl border border-line bg-surface px-3.5 text-fg placeholder:text-subtle shadow-sm transition-[border-color,box-shadow] outline-none focus:border-accent-line focus:ring-4 focus:ring-[var(--ring)]/20 aria-[invalid=true]:border-danger";
+/** Field look without a width (for selects that sit inline). */
+export const fieldClass =
+  "h-11 rounded-xl border border-line bg-surface px-3.5 text-fg placeholder:text-subtle shadow-sm transition-[border-color,box-shadow] outline-none focus:border-accent-line focus:ring-4 focus:ring-[var(--ring)]/20 aria-[invalid=true]:border-danger";
+
+export const inputClass = `w-full ${fieldClass}`;
 
 export function Input({ className, ...props }: React.ComponentProps<"input">) {
   return <input className={cn(inputClass, className)} {...props} />;

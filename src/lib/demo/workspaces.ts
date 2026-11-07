@@ -3,6 +3,8 @@
 
 import type { Prisma, PrismaClient } from "../../generated/prisma/client";
 import { seedHomeDemo } from "./home";
+import { reindexOrg } from "../search/index-core";
+import { writeDemoLogo } from "./logos";
 
 /** Works with the client or inside a transaction. */
 type Db = PrismaClient | Prisma.TransactionClient;
@@ -132,6 +134,16 @@ export async function seedWorkspaces(db: Db, passwordHash: string, now = new Dat
   };
   for (const [person, orgId] of Object.entries(landing)) {
     await db.user.update({ where: { id: users[person as DemoPerson] }, data: { lastOrgId: orgId } });
+  }
+
+  for (const org of [home, biz, school]) await reindexOrg(db, org.id);
+  const logos = [
+    [home, "home", "#8A1538"],
+    [biz, "business", "#0B6E8A"],
+    [school, "school", "#4B3FA8"],
+  ] as const;
+  for (const [org, kind, color] of logos) {
+    await db.organization.update({ where: { id: org.id }, data: { logoPath: await writeDemoLogo(org.id, kind, color), brandColor: color } });
   }
 
   return { users, home, biz, school };

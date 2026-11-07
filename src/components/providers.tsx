@@ -2,6 +2,7 @@
 
 import { createContext, use, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, useTransition } from "react";
 import { MotionConfig } from "motion/react";
+import { Toaster } from "sonner";
 import type { Prefs } from "@/lib/prefs";
 import { applyPrefsToDocument } from "@/lib/prefs-dom";
 import { createT, dirOf, type TFunction } from "@/lib/i18n";
@@ -84,6 +85,12 @@ export function AppProviders({ initialPrefs, children }: { initialPrefs: Prefs; 
       <I18nContext value={i18n}>
         <MotionConfig reducedMotion={reducedMotion} transition={{ type: "spring", stiffness: 380, damping: 32 }}>
           {children}
+          <Toaster
+            dir={dirOf(prefs.locale)}
+            position="bottom-center"
+            theme={prefs.mode}
+            toastOptions={{ className: "!rounded-xl !border-line !bg-surface !text-fg !shadow-lift !font-sans" }}
+          />
         </MotionConfig>
       </I18nContext>
     </PrefsContext>

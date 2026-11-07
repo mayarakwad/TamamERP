@@ -3,6 +3,8 @@
 
 import type { Prisma, PrismaClient } from "../../generated/prisma/client";
 import { rng, daysAgo, atHour, type Rng } from "./random";
+import { renderReceipt, saveReceiptFiles } from "./receipts";
+import { randomBytes } from "node:crypto";
 
 /** Works with the client or inside a transaction. */
 type Db = PrismaClient | Prisma.TransactionClient;
@@ -159,6 +161,16 @@ export async function seedHomeDemo(db: Db, orgId: string, people: HomePeople, no
         createdAt: spentOn,
       },
     });
+
+    // Receipt photos for the last three weeks (Maria forgot one, as people do).
+    if (c.daysAgo <= 21 && !(c.by === "maria" && c.amount === 48)) {
+      const image = await renderReceipt({ merchant: c.merchant, category: c.cat, amount: claim.amount, date: spentOn, paidWith: claim.paidWith, number }, r);
+      const fileId = randomBytes(12).toString("hex");
+      const files = await saveReceiptFiles(orgId, fileId, image);
+      await db.attachment.create({
+        data: { orgId, entityType: "claim", entityId: claim.id, kind: "receipt", fileName: `receipt-${number}.webp`, mimeType: "image/webp", uploadedById: submitter, createdAt: spentOn, ...files },
+      });
+    }
 
     if (c.daysAgo <= 14) {
       await db.auditLog.create({

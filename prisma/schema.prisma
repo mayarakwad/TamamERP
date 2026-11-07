@@ -108,6 +108,9 @@ model Organization {
   comments      Comment[]
   attachments   Attachment[]
   series        NamingSeries[]
+  invitations   Invitation[]
+  shareLinks    ShareLink[]
+  searchIndex   SearchIndex[]
 }
 
 /// A campus (schools) or branch (businesses). Optional for homes.
@@ -244,6 +247,10 @@ model Attachment {
   size         Int
   /// Path inside STORAGE_DIR
   path         String
+  /// Small preview (images only)
+  thumbPath    String?
+  /// receipt | photo | file
+  kind         String   @default("file")
   width        Int?
   height       Int?
   uploadedById String
@@ -370,6 +377,8 @@ model BillPayment {
   /// due | paid | skipped
   status   String    @default("due")
   paidById String?
+  /// When the "due soon" reminder went out (sent once per due date)
+  remindedAt DateTime?
 
   org  Organization  @relation(fields: [orgId], references: [id], onDelete: Cascade)
   bill RecurringBill @relation(fields: [billId], references: [id], onDelete: Cascade)
@@ -392,10 +401,79 @@ model Possession {
   price         Int?
   store         String?
   warrantyUntil DateTime?
+  /// When the "warranty ending" reminder went out
+  warrantyRemindedAt DateTime?
   notes         String?
   createdAt     DateTime  @default(now())
 
   org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
   @@index([orgId, warrantyUntil])
+}
+
+// ───────────────────────── Collaboration & sharing ─────────────────────────
+
+/// An invitation link to join a workspace with a role. Works even when
+/// public sign-ups are closed.
+model Invitation {
+  id          String    @id @default(cuid())
+  orgId       String
+  email       String
+  role        String
+  title       String?
+  /// SHA-256 of the token in the link
+  tokenHash   String    @unique
+  invitedById String
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  revokedAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId])
+}
+
+/// A view-only link to a frozen copy of a table or report.
+model ShareLink {
+  id            String    @id @default(cuid())
+  orgId         String
+  tokenHash     String    @unique
+  /// Dataset id (e.g. "claims") the snapshot came from
+  dataset       String
+  title         String
+  /// Columns, rows, branding and locale at the moment of sharing
+  snapshot      Json
+  allowDownload Boolean   @default(false)
+  expiresAt     DateTime?
+  revokedAt     DateTime?
+  views         Int       @default(0)
+  lastViewedAt  DateTime?
+  createdById   String
+  createdAt     DateTime  @default(now())
+
+  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId])
+}
+
+/// One row per searchable record. `text` is lower-cased with Arabic letter
+/// forms and diacritics normalized, so "احمد" finds "أحمد".
+model SearchIndex {
+  id           String   @id @default(cuid())
+  orgId        String
+  entityType   String
+  entityId     String
+  title        String
+  subtitle     String?
+  href         String
+  text         String
+  /// Only this user (and roles that see everything of this type) may find it
+  restrictedTo String?
+  updatedAt    DateTime @updatedAt
+
+  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([entityType, entityId])
+  @@index([orgId])
 }
