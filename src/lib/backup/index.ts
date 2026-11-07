@@ -217,7 +217,7 @@ export async function importWorkspace(data: BackupData, files: Record<string, Ui
       }
 
       let slug: string;
-      let name = o.name?.trim() || String(src.name);
+      const name = o.name?.trim() || String(src.name);
       const orgFields = Object.keys(Prisma.OrganizationScalarFieldEnum).filter((f) => !["id", "slug", "createdAt", "updatedAt", "logoPath"].includes(f));
       const orgData = Object.fromEntries(orgFields.filter((f) => f in src).map((f) => [f, src[f]])) as Record<string, unknown>;
       orgData.name = name;
