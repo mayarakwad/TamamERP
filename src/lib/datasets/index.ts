@@ -2,10 +2,15 @@ import "server-only";
 import type { Workspace } from "../auth/dal";
 import type { Dataset } from "./types";
 import { claimsDataset } from "./claims";
+import { billsDataset, budgetsDataset, possessionsDataset, summaryDataset } from "./home";
 
 // Every exportable table in the app. Add new datasets here.
 const DATASETS: Record<string, Dataset<Workspace>> = {
   claims: claimsDataset,
+  budgets: budgetsDataset,
+  bills: billsDataset,
+  possessions: possessionsDataset,
+  summary: summaryDataset,
 };
 
 export function getDataset(id: string): Dataset<Workspace> | undefined {

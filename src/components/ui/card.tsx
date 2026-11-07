@@ -9,7 +9,7 @@ export function Card({
   return (
     <div
       className={cn(
-        "rounded-[var(--radius-card)] border border-line shadow-card",
+        "rounded-[var(--radius-card)] border border-line shadow-card print:break-inside-avoid print:shadow-none",
         glass ? "bg-glass backdrop-blur-xl" : "bg-surface",
         lift && "lift",
         className,

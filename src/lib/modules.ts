@@ -116,7 +116,7 @@ export const NAV: NavItem[] = [
 ];
 
 /** Pages already built (everything else shows a "coming in stage N" page). */
-export const READY = new Set(["home-dashboard", "biz-dashboard", "school-dashboard", "appearance", "profile", "claims"]);
+export const READY = new Set(["home-dashboard", "biz-dashboard", "school-dashboard", "appearance", "profile", "claims", "budgets", "bills", "things", "summary"]);
 
 const GROUP_ORDER: MessageKey[] = [
   "nav.groupMain",
