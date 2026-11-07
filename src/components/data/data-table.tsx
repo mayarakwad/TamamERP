@@ -8,7 +8,7 @@ import { useI18n } from "@/components/providers";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { formatCell } from "@/lib/datasets/format-cell";
-import type { Column, DatasetResult, Row } from "@/lib/datasets/types";
+import { type Column, type DatasetResult, type Row, columnLabel } from "@/lib/datasets/types";
 
 const PAGE = 50;
 
@@ -59,7 +59,7 @@ export function DataTable({ slug, result, renderCell = {}, mobileRow, empty }: D
               {result.columns.map((c) => (
                 <th key={c.key} scope="col" className={cn("px-4 py-2.5 text-start text-xs font-semibold whitespace-nowrap text-muted", numeric(c) && "text-end", c.hideOnMobile && "hidden lg:table-cell")}>
                   <button type="button" onClick={() => toggle(c.key)} className={cn("inline-flex items-center gap-1 hover:text-fg", numeric(c) && "flex-row-reverse")}>
-                    {t(c.label)}
+                    {columnLabel(c, t)}
                     {sort?.key === c.key ? sort.dir === 1 ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" /> : <ChevronsUpDown className="size-3 opacity-40" />}
                   </button>
                 </th>

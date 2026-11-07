@@ -24,6 +24,7 @@ export default async function WorkspaceLayout({ children, params }: LayoutProps<
     logoUrl: ws.org.logoPath ? `/api/w/${slug}/logo?v=${ws.org.updatedAt.getTime()}` : null,
     campusCount: ws.org.campuses.length,
     role: ws.role,
+    extras: ws.extras,
     title: ws.membership.title,
     titleAr: ws.membership.titleAr,
     viewer: { name: ws.viewer.name, nameAr: ws.viewer.nameAr, email: ws.viewer.email, avatarColor: ws.viewer.avatarColor },

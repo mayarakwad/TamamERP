@@ -12,6 +12,10 @@ import { renderDocx } from "@/lib/export/docx";
 import { renderTableHtml } from "@/lib/export/html";
 import { htmlToPdf, PdfUnavailable } from "@/lib/export/pdf";
 import { renderClaimVoucher } from "@/lib/export/voucher";
+import { renderBusinessDocument, renderStatement } from "@/lib/export/document";
+import { renderPayslip } from "@/lib/export/payslip";
+import { bizSettings } from "@/lib/biz";
+import { db } from "@/lib/db";
 
 const TYPES: Record<string, string> = {
   xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -20,6 +24,14 @@ const TYPES: Record<string, string> = {
   pdf: "application/pdf",
   print: "text/html; charset=utf-8",
 };
+
+/** Payslips: payroll people see all; an employee sees their own. */
+async function canViewPayslip(ws: NonNullable<Awaited<ReturnType<typeof getWorkspaceForApi>>>, id: string) {
+  const p = await db.payslip.findFirst({ where: { id, orgId: ws.org.id }, select: { employee: { select: { userId: true } }, run: { select: { status: true } } } });
+  if (!p) return false;
+  if (ws.can("payroll.run") || ws.can("hr.manage")) return true;
+  return p.employee.userId === ws.viewer.id && p.run.status !== "draft";
+}
 
 /** Download any dataset as Excel, CSV, Word or PDF, or open its print layout. */
 export async function GET(request: Request, { params }: RouteContext<"/api/w/[slug]/export/[dataset]">) {
@@ -61,12 +73,26 @@ export async function GET(request: Request, { params }: RouteContext<"/api/w/[sl
   let doc: ExportDoc;
   let body: Buffer | string;
 
-  if (dataset === "claim") {
-    // A single claim voucher (print or PDF).
-    const id = query.get("id") ?? "";
-    if (!(await canViewEntity(ws, "claim", id))) return new Response("Not found", { status: 404 });
-    doc = makeDoc({ ...common, title: t("claims.colNumber"), columns: [], rows: [] });
-    const html = await renderClaimVoucher(doc, ws.org.id, id, format === "pdf" ? "pdf" : "print");
+  // Single records: claim vouchers, business documents, statements, payslips.
+  if (["claim", "document", "statement", "payslip"].includes(dataset)) {
+    const id = query.get("id") ?? query.get("party") ?? "";
+    const entity = { claim: "claim", document: "document", statement: "party", payslip: "payslip" }[dataset]!;
+    const allowed =
+      entity === "payslip"
+        ? await canViewPayslip(ws, id)
+        : await canViewEntity(ws, entity, id);
+    if (!allowed) return new Response("Not found", { status: 404 });
+    doc = makeDoc({ ...common, title: "", columns: [], rows: [] });
+    const mode = format === "pdf" ? "pdf" : "print";
+    let html: string;
+    let name = dataset;
+    if (dataset === "claim") html = await renderClaimVoucher(doc, ws.org.id, id, mode);
+    else if (dataset === "document") {
+      html = await renderBusinessDocument(doc, ws.org.id, id, mode, bizSettings(ws.org).sales ?? {});
+      name = (await db.document.findUnique({ where: { id }, select: { number: true } }))?.number ?? "document";
+    } else if (dataset === "statement") html = await renderStatement(doc, ws.org.id, id, mode);
+    else html = await renderPayslip(doc, ws.org.id, id, mode);
+    await audit({ orgId: ws.org.id, userId: ws.viewer.id, action: format === "pdf" ? "export.downloaded" : "export.printed", entityType: entity, entityId: id, summary: `${format === "pdf" ? "downloaded PDF of" : "printed"} ${dataset} ${name}`, summaryAr: `${format === "pdf" ? "تنزيل PDF" : "طباعة"} ${name}`, sensitive: dataset === "payslip" });
     if (format !== "pdf") return new Response(html, { headers: { "Content-Type": TYPES.print, "Cache-Control": "no-store" } });
     try {
       body = await htmlToPdf(html, { landscape: false, footerLeft: `${appName} · ${brand.name}`, dir: doc.dir, locale });
@@ -74,7 +100,7 @@ export async function GET(request: Request, { params }: RouteContext<"/api/w/[sl
       if (e instanceof PdfUnavailable) return new Response("PDF export needs Chromium on the server (npx playwright install chromium). Use Print instead.", { status: 503 });
       throw e;
     }
-    return new Response(new Uint8Array(body), { headers: { "Content-Type": TYPES.pdf, "Content-Disposition": `attachment; filename="voucher.pdf"` } });
+    return new Response(new Uint8Array(body), { headers: { "Content-Type": TYPES.pdf, "Content-Disposition": `attachment; filename="${name.replace(/[^\w.-]+/g, "_")}.pdf"`, "Cache-Control": "no-store" } });
   }
 
   const ds = getDataset(dataset);

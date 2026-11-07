@@ -1,4 +1,5 @@
 import type { Messages } from "./en";
+import { arBiz } from "./ar-biz";
 
 // الرسائل العربية. يجب أن تطابق بنية en.ts (يتحقق TypeScript من ذلك).
 
@@ -28,6 +29,9 @@ export const ar: Messages = {
     off: "إيقاف",
     english: "English",
     arabic: "العربية",
+    delete: "حذف",
+    all: "الكل",
+    new: "جديد",
   },
   orgTypes: {
     business: "شركة",
@@ -147,6 +151,10 @@ export const ar: Messages = {
     groupFinance: "المالية",
     groupFamily: "العائلة",
     groupSettings: "الإعدادات",
+    paymentsOut: "الدفعات المدفوعة",
+    accounts: "دليل الحسابات",
+    journals: "القيود اليومية",
+    payslips: "قسائم راتبي",
   },
   modules: {
     claims: "يصوّر أفراد العائلة الإيصال ويرسلون ما أنفقوه. توافق بلمسة واحدة، فيُحتسب من ميزانية الشهر.",
@@ -187,6 +195,10 @@ export const ar: Messages = {
     activity: "من غيّر ماذا ومتى، بما في ذلك تسجيلات الدخول والتصدير.",
     data: "نزّل نسخة احتياطية كاملة أو استعدها أو انسخ مساحة العمل.",
     flow: "اربط مفتاح الذكاء الاصطناعي الخاص بك واختر النموذج وحدد سقفاً شهرياً.",
+    paymentsOut: "المبالغ المدفوعة للموردين مطابقة لفواتيرهم.",
+    accounts: "دليل الحسابات مع الأرصدة الحالية.",
+    journals: "كل القيود اليومية، مع قيود يدوية للأرصدة الافتتاحية والتسويات.",
+    payslips: "قسائم رواتبك الشهرية جاهزة للطباعة.",
   },
   shell: {
     searchPlaceholder: "ابحث أو انتقل إلى…",
@@ -446,6 +458,22 @@ export const ar: Messages = {
     due: "مستحقة",
     paid: "مدفوعة",
     skipped: "متجاوزة",
+    sent: "مُرسل",
+    accepted: "مقبول",
+    declined: "مرفوض",
+    converted: "تمت فوترته",
+    issued: "مفتوحة",
+    posted: "مفتوحة",
+    open: "مفتوح",
+    partial: "مدفوعة جزئياً",
+    partReceived: "مستلم جزئياً",
+    overdue: "متأخرة",
+    void: "ملغاة",
+    cancelled: "ملغى",
+    received: "مستلم",
+    billed: "تمت فوترته",
+    active: "على رأس العمل",
+    terminated: "غادر",
   },
   claims: {
     title: "المطالبات",
@@ -761,6 +789,8 @@ export const ar: Messages = {
     saved: "تم حفظ مساحة العمل",
     preview: "معاينة المستند",
     sample: "مستند نموذجي",
+    crNumber: "رقم السجل التجاري",
+    addressPlaceholder: "المبنى، الشارع، المنطقة، الحي",
   },
   members: {
     title: "الأعضاء والأدوار",
@@ -872,4 +902,5 @@ export const ar: Messages = {
     invalidEmail: "أدخل بريداً إلكترونياً صحيحاً",
     tooShort: "قصير جداً",
   },
+  ...arBiz,
 };

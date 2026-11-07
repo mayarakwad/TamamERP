@@ -10,6 +10,7 @@ import { audit } from "@/lib/audit";
 import { parsePrefs } from "@/lib/prefs";
 import { writePrefsCookie } from "./prefs";
 import { createHomeDefaults } from "@/lib/demo/home";
+import { ensureBusinessDefaults } from "@/lib/ledger/chart";
 import { isOrgType } from "@/lib/rbac";
 import { getSystem } from "@/lib/system";
 
@@ -157,6 +158,7 @@ export async function signup(_prev: FormState, formData: FormData): Promise<Form
     }
     if (d.type === "business") {
       await tx.campus.create({ data: { orgId: org.id, name: "Main branch", nameAr: "الفرع الرئيسي", code: "MAIN" } });
+      await ensureBusinessDefaults(tx, org.id);
     }
     await tx.user.update({ where: { id: user.id }, data: { lastOrgId: org.id } });
     return { user, org };

@@ -13,6 +13,25 @@ export async function wipeAll(db: PrismaClient) {
   await db.attachment.deleteMany();
   await db.billPayment.deleteMany();
   await db.claim.deleteMany();
+  // Stage 2 tables, children before parents (some references don't cascade).
+  await db.payslip.deleteMany();
+  await db.payrollRun.deleteMany();
+  await db.leaveRequest.deleteMany();
+  await db.attendanceDay.deleteMany();
+  await db.employee.deleteMany();
+  await db.journalLine.deleteMany();
+  await db.journalEntry.deleteMany();
+  await db.paymentAllocation.deleteMany();
+  await db.payment.deleteMany();
+  await db.documentLine.deleteMany();
+  await db.document.deleteMany();
+  await db.stockMove.deleteMany();
+  await db.stockLevel.deleteMany();
+  await db.item.deleteMany();
+  await db.party.deleteMany();
+  await db.recurringBill.deleteMany();
+  await db.expenseCategory.deleteMany();
+  await db.account.deleteMany();
   await db.organization.deleteMany();
   await db.session.deleteMany();
   await db.loginAttempt.deleteMany();

@@ -15,7 +15,7 @@ export default async function ComingSoon({ params }: PageProps<"/w/[slug]/[...re
   const { t } = await getI18n();
   const path = rest.join("/");
   const item = findNav(ws.orgType, path);
-  if (!item || !navFor(ws.orgType, ws.role).some((n) => n.id === item.id)) notFound();
+  if (!item || !navFor(ws.orgType, ws.role, ws.extras).some((n) => n.id === item.id)) notFound();
 
   const Icon = item.icon ?? Compass;
   const stage = item.stage.replace("1b", "1b");

@@ -34,8 +34,10 @@ export type Permission =
   | "budgets.manage"
   | "bills.manage"
   | "possessions.manage"
-  | "finance.view"
-  | "finance.manage"
+  | "finance.view" // sales, purchases, stock values, reports
+  | "finance.manage" // create documents, record payments, journals
+  | "inventory.manage" // receive goods, adjust and transfer stock
+  | "leave.approve"
   | "hr.view"
   | "hr.manage"
   | "payroll.run"
@@ -58,6 +60,8 @@ const GRANTS: Record<Role, Permission[] | "*"> = {
     "possessions.manage",
     "finance.view",
     "finance.manage",
+    "inventory.manage",
+    "leave.approve",
     "hr.view",
     "hr.manage",
     "school.manage",
@@ -68,6 +72,7 @@ const GRANTS: Record<Role, Permission[] | "*"> = {
     "claims.viewAll",
     "finance.view",
     "finance.manage",
+    "inventory.manage",
     "hr.view",
     "payroll.run",
     "exports.share",
@@ -78,9 +83,17 @@ const GRANTS: Record<Role, Permission[] | "*"> = {
   member: ["claims.submit", "possessions.manage"],
 };
 
-export function can(role: Role, permission: Permission): boolean {
+/** Permissions an owner or admin may grant to one person on top of their role. */
+export const GRANTABLE: Permission[] = ["inventory.manage", "finance.view", "claims.approve", "leave.approve", "hr.view"];
+
+export function parseExtras(raw: string | null | undefined): Permission[] {
+  if (!raw) return [];
+  return raw.split(",").map((s) => s.trim()).filter((p): p is Permission => (GRANTABLE as string[]).includes(p));
+}
+
+export function can(role: Role, permission: Permission, extras: readonly Permission[] = []): boolean {
   const grants = GRANTS[role];
-  return grants === "*" || grants.includes(permission);
+  return grants === "*" || grants.includes(permission) || extras.includes(permission);
 }
 
 export function isRole(value: string): value is Role {

@@ -32,18 +32,46 @@ interface TableSpec {
   dates: string[];
   /** included in a "fresh start" (structure-only) copy */
   structure: boolean;
+  /** references whose target table depends on another field, e.g. sourceId by sourceType */
+  cond?: { field: string; by: string; map: Record<string, string> }[];
+  /** fields that must resolve, or the row is skipped (defaults to the common ones) */
+  required?: string[];
 }
 
 // Order matters: referenced tables come first.
 const TABLES: TableSpec[] = [
   { key: "campus", model: "campus", fields: Prisma.CampusScalarFieldEnum, dates: ["createdAt"], structure: true },
   { key: "membership", model: "membership", fields: Prisma.MembershipScalarFieldEnum, fk: { userId: "user", campusId: "campus" }, dates: ["createdAt"], structure: true },
-  { key: "category", model: "expenseCategory", fields: Prisma.ExpenseCategoryScalarFieldEnum, dates: [], structure: true },
+  { key: "account", model: "account", fields: Prisma.AccountScalarFieldEnum, dates: ["createdAt"], structure: true },
+  { key: "category", model: "expenseCategory", fields: Prisma.ExpenseCategoryScalarFieldEnum, fk: { accountId: "account" }, dates: [], structure: true },
   { key: "budget", model: "budget", fields: Prisma.BudgetScalarFieldEnum, fk: { categoryId: "category" }, dates: [], structure: true },
   { key: "claim", model: "claim", fields: Prisma.ClaimScalarFieldEnum, fk: { submittedById: "user", decidedById: "user", categoryId: "category" }, dates: ["spentOn", "decidedAt", "reimbursedAt", "createdAt", "updatedAt", "deletedAt"], structure: false },
   { key: "bill", model: "recurringBill", fields: Prisma.RecurringBillScalarFieldEnum, fk: { categoryId: "category" }, dates: ["nextDue", "createdAt"], structure: true },
   { key: "billPayment", model: "billPayment", fields: Prisma.BillPaymentScalarFieldEnum, fk: { billId: "bill", paidById: "user" }, dates: ["dueOn", "paidOn", "remindedAt"], structure: false },
   { key: "possession", model: "possession", fields: Prisma.PossessionScalarFieldEnum, dates: ["purchasedOn", "warrantyUntil", "warrantyRemindedAt", "createdAt"], structure: true },
+  { key: "party", model: "party", fields: Prisma.PartyScalarFieldEnum, dates: ["createdAt"], structure: true },
+  { key: "item", model: "item", fields: Prisma.ItemScalarFieldEnum, dates: ["lowStockAlertedAt", "createdAt"], structure: true },
+  { key: "stockLevel", model: "stockLevel", fields: Prisma.StockLevelScalarFieldEnum, fk: { itemId: "item", campusId: "campus" }, dates: [], structure: false, required: ["itemId", "campusId"] },
+  { key: "document", model: "document", fields: Prisma.DocumentScalarFieldEnum, fk: { partyId: "party", campusId: "campus", sourceId: "document", createdById: "user" }, dates: ["date", "dueDate", "issuedAt", "createdAt", "updatedAt"], structure: false, required: ["partyId"] },
+  { key: "documentLine", model: "documentLine", fields: Prisma.DocumentLineScalarFieldEnum, fk: { documentId: "document", itemId: "item", accountId: "account" }, dates: [], structure: false, required: ["documentId"] },
+  { key: "payment", model: "payment", fields: Prisma.PaymentScalarFieldEnum, fk: { partyId: "party", accountId: "account", createdById: "user" }, dates: ["date", "voidedAt", "createdAt"], structure: false, required: ["partyId", "accountId"] },
+  { key: "allocation", model: "paymentAllocation", fields: Prisma.PaymentAllocationScalarFieldEnum, fk: { paymentId: "payment", documentId: "document" }, dates: [], structure: false, required: ["paymentId", "documentId"] },
+  { key: "stockMove", model: "stockMove", fields: Prisma.StockMoveScalarFieldEnum, fk: { itemId: "item", campusId: "campus", createdById: "user" }, cond: [{ field: "sourceId", by: "sourceType", map: { document: "document", void: "document" } }], dates: ["date", "createdAt"], structure: false, required: ["itemId", "campusId"] },
+  { key: "employee", model: "employee", fields: Prisma.EmployeeScalarFieldEnum, fk: { userId: "user", campusId: "campus" }, dates: ["qidExpiry", "passportExpiry", "joinedOn", "leftOn", "qidRemindedAt", "passportRemindedAt", "createdAt"], structure: true },
+  { key: "attendance", model: "attendanceDay", fields: Prisma.AttendanceDayScalarFieldEnum, fk: { employeeId: "employee" }, dates: ["date"], structure: false, required: ["employeeId"] },
+  { key: "leave", model: "leaveRequest", fields: Prisma.LeaveRequestScalarFieldEnum, fk: { employeeId: "employee", requestedById: "user", decidedById: "user" }, dates: ["startDate", "endDate", "decidedAt", "createdAt"], structure: false, required: ["employeeId"] },
+  { key: "payrollRun", model: "payrollRun", fields: Prisma.PayrollRunScalarFieldEnum, fk: { createdById: "user", approvedById: "user" }, dates: ["payDate", "approvedAt", "paidAt", "createdAt"], structure: false },
+  { key: "payslip", model: "payslip", fields: Prisma.PayslipScalarFieldEnum, fk: { runId: "payrollRun", employeeId: "employee" }, dates: [], structure: false, required: ["runId", "employeeId"] },
+  {
+    key: "journalEntry",
+    model: "journalEntry",
+    fields: Prisma.JournalEntryScalarFieldEnum,
+    fk: { reversesId: "journalEntry", createdById: "user" },
+    cond: [{ field: "sourceId", by: "sourceType", map: { invoice: "document", bill: "document", receipt: "document", payment: "payment", claim: "claim", payroll: "payrollRun" } }],
+    dates: ["date", "reversedAt", "createdAt"],
+    structure: false,
+  },
+  { key: "journalLine", model: "journalLine", fields: Prisma.JournalLineScalarFieldEnum, fk: { entryId: "journalEntry", accountId: "account", partyId: "party" }, dates: ["date"], structure: false, required: ["entryId", "accountId"] },
   { key: "comment", model: "comment", fields: Prisma.CommentScalarFieldEnum, fk: { authorId: "user" }, poly: true, dates: ["createdAt"], structure: false },
   { key: "attachment", model: "attachment", fields: Prisma.AttachmentScalarFieldEnum, fk: { uploadedById: "user" }, poly: true, dates: ["createdAt"], structure: true },
   { key: "auditLog", model: "auditLog", fields: Prisma.AuditLogScalarFieldEnum, fk: { userId: "user" }, poly: true, dates: ["createdAt"], structure: false },
@@ -51,7 +79,24 @@ const TABLES: TableSpec[] = [
 ];
 
 /** entityType values → the table their entityId points into */
-const POLY: Record<string, string> = { claim: "claim", possession: "possession", bill: "bill", category: "category", organization: "org", user: "user" };
+const POLY: Record<string, string> = {
+  claim: "claim",
+  possession: "possession",
+  bill: "bill",
+  category: "category",
+  organization: "org",
+  user: "user",
+  party: "party",
+  item: "item",
+  document: "document",
+  payment: "payment",
+  employee: "employee",
+  leave: "leave",
+  payroll: "payrollRun",
+  journal: "journalEntry",
+};
+
+const DEFAULT_REQUIRED = ["userId", "submittedById", "authorId", "uploadedById", "billId", "categoryId"];
 
 const USER_FIELDS = ["id", "email", "name", "nameAr", "phone", "avatarColor", "passwordHash", "preferences"] as const;
 
@@ -261,8 +306,13 @@ export async function importWorkspace(data: BackupData, files: Record<string, Ui
             if (row[field] == null) continue;
             const mapped = ids[target]?.get(String(row[field]));
             if (mapped) row[field] = mapped;
-            else if (["userId", "submittedById", "authorId", "uploadedById", "billId", "categoryId"].includes(field) && t.key !== "auditLog") ok = false;
+            else if ((t.required ?? DEFAULT_REQUIRED).includes(field) && t.key !== "auditLog") ok = false;
             else row[field] = null;
+          }
+          for (const c of t.cond ?? []) {
+            const target = c.map[String(row[c.by])];
+            if (!target || row[c.field] == null) continue;
+            row[c.field] = ids[target]?.get(String(row[c.field])) ?? null;
           }
           if (t.poly && row.entityType) {
             const target = POLY[String(row.entityType)];
@@ -286,6 +336,9 @@ export async function importWorkspace(data: BackupData, files: Record<string, Ui
             }
           }
           if (t.key === "billPayment" && o.structureOnly && row.status !== "due") ok = false;
+          // A fresh start keeps people and prices but no history.
+          if (o.structureOnly && t.key === "item") Object.assign(row, { avgCost: row.avgCost, lowStockAlertedAt: null });
+          if (o.structureOnly && t.key === "employee") Object.assign(row, { qidRemindedAt: null, passportRemindedAt: null, leaveOpening: 0 });
           if (ok) out.push(row);
         }
         if (out.length) await delegate(tx, t.model).createMany({ data: out });

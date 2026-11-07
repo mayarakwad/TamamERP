@@ -24,7 +24,7 @@ export function SidebarNav({ data, collapsed, onNavigate }: { data: ShellData; c
   const { t } = useI18n();
   const pathname = usePathname();
   const base = `/w/${data.slug}`;
-  const items = navFor(data.orgType, data.role).filter((n) => n.id !== "campuses" || data.campusCount > 1);
+  const items = navFor(data.orgType, data.role, data.extras).filter((n) => n.id !== "campuses" || data.campusCount > 1);
   const groups = groupItems(items);
 
   return (

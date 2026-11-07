@@ -1,4 +1,4 @@
-import type { OrgType, Role } from "@/lib/rbac";
+import type { OrgType, Permission, Role } from "@/lib/rbac";
 
 export interface ShellData {
   slug: string;
@@ -12,6 +12,7 @@ export interface ShellData {
   logoUrl: string | null;
   campusCount: number;
   role: Role;
+  extras: Permission[];
   title: string | null;
   titleAr: string | null;
   viewer: { name: string; nameAr: string | null; email: string; avatarColor: string | null };

@@ -20,6 +20,7 @@ import {
   type IRunOptions,
 } from "docx";
 import { formatCell } from "../datasets/format-cell";
+import { columnLabel } from "../datasets/types";
 import { currencyLabel, generatedLine, isNumeric, type ExportDoc } from "./doc";
 
 // Word documents: A4 (landscape for wide tables), the organization's logo and
@@ -50,7 +51,7 @@ export async function renderDocx(doc: ExportDoc): Promise<Buffer> {
           verticalAlign: VerticalAlign.CENTER,
           margins: { top: 80, bottom: 80, left: 100, right: 100 },
           borders: { top: none, left: none, right: none, bottom: none },
-          children: [para([run(c.type === "money" ? `${doc.t(c.label)} (${currencyLabel(doc)})` : doc.t(c.label), { bold: true, color: "FFFFFF", size: 18, sizeComplexScript: 18 })], { align: isNumeric(c) ? AlignmentType.END : AlignmentType.START })],
+          children: [para([run(c.type === "money" ? `${columnLabel(c, doc.t)} (${currencyLabel(doc)})` : columnLabel(c, doc.t), { bold: true, color: "FFFFFF", size: 18, sizeComplexScript: 18 })], { align: isNumeric(c) ? AlignmentType.END : AlignmentType.START })],
         }),
     ),
   });

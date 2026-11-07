@@ -42,21 +42,21 @@ model SystemSetting {
 }
 
 model User {
-  id           String    @id @default(cuid())
-  email        String    @unique
-  name         String
-  nameAr       String?
-  passwordHash String
-  phone        String?
-  avatarColor  String?
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  nameAr        String?
+  passwordHash  String
+  phone         String?
+  avatarColor   String?
   /// Appearance + language choices. Shape: src/lib/prefs.ts
-  preferences  Json?
-  lastOrgId    String?
-  lastLoginAt  DateTime?
+  preferences   Json?
+  lastOrgId     String?
+  lastLoginAt   DateTime?
   /// Manages this installation (created by the setup wizard)
-  isSystemAdmin Boolean  @default(false)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  isSystemAdmin Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   memberships   Membership[]
   sessions      Session[]
@@ -95,22 +95,38 @@ model Organization {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  campuses      Campus[]
-  memberships   Membership[]
-  auditLogs     AuditLog[]
-  notifications Notification[]
-  categories    ExpenseCategory[]
-  claims        Claim[]
-  budgets       Budget[]
-  bills         RecurringBill[]
-  billPayments  BillPayment[]
-  possessions   Possession[]
-  comments      Comment[]
-  attachments   Attachment[]
-  series        NamingSeries[]
-  invitations   Invitation[]
-  shareLinks    ShareLink[]
-  searchIndex   SearchIndex[]
+  campuses       Campus[]
+  memberships    Membership[]
+  auditLogs      AuditLog[]
+  notifications  Notification[]
+  categories     ExpenseCategory[]
+  claims         Claim[]
+  budgets        Budget[]
+  bills          RecurringBill[]
+  billPayments   BillPayment[]
+  possessions    Possession[]
+  comments       Comment[]
+  attachments    Attachment[]
+  series         NamingSeries[]
+  invitations    Invitation[]
+  shareLinks     ShareLink[]
+  searchIndex    SearchIndex[]
+  accounts       Account[]
+  journalEntries JournalEntry[]
+  journalLines   JournalLine[]
+  parties        Party[]
+  items          Item[]
+  stockLevels    StockLevel[]
+  stockMoves     StockMove[]
+  documents      Document[]
+  documentLines  DocumentLine[]
+  payments       Payment[]
+  allocations    PaymentAllocation[]
+  employees      Employee[]
+  attendance     AttendanceDay[]
+  leaveRequests  LeaveRequest[]
+  payrollRuns    PayrollRun[]
+  payslips       Payslip[]
 }
 
 /// A campus (schools) or branch (businesses). Optional for homes.
@@ -127,26 +143,30 @@ model Campus {
 
   org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
   memberships Membership[]
+  stockLevels StockLevel[]
+  stockMoves  StockMove[]
 
   @@unique([orgId, code])
 }
 
 model Membership {
-  id              String   @id @default(cuid())
-  userId          String
-  orgId           String
+  id               String   @id @default(cuid())
+  userId           String
+  orgId            String
   /// owner | admin | accountant | teacher | parent | employee | member
-  role            String
+  role             String
   /// null = every campus
-  campusId        String?
+  campusId         String?
   /// Free-text job title shown in the UI ("Principal", "Head of household")
-  title           String?
-  titleAr         String?
+  title            String?
+  titleAr          String?
   /// active | invited | disabled
-  status          String   @default("active")
+  status           String   @default("active")
   /// Ordered widget ids + hidden widgets for this person in this workspace
-  dashboardLayout Json?
-  createdAt       DateTime @default(now())
+  dashboardLayout  Json?
+  /// Comma-separated permissions granted on top of the role (e.g. "inventory.manage")
+  extraPermissions String?
+  createdAt        DateTime @default(now())
 
   user   User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   org    Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
@@ -277,15 +297,17 @@ model NamingSeries {
 // ───────────────────────── Home ─────────────────────────
 
 model ExpenseCategory {
-  id       String  @id @default(cuid())
-  orgId    String
-  key      String
-  name     String
-  nameAr   String
-  icon     String
-  color    String
-  sort     Int     @default(0)
-  archived Boolean @default(false)
+  id        String  @id @default(cuid())
+  orgId     String
+  key       String
+  name      String
+  nameAr    String
+  icon      String
+  color     String
+  sort      Int     @default(0)
+  archived  Boolean @default(false)
+  /// Ledger account an approved claim in this category is booked to (businesses, schools)
+  accountId String?
 
   org     Organization    @relation(fields: [orgId], references: [id], onDelete: Cascade)
   claims  Claim[]
@@ -368,15 +390,15 @@ model RecurringBill {
 }
 
 model BillPayment {
-  id       String    @id @default(cuid())
-  orgId    String
-  billId   String
-  dueOn    DateTime
-  paidOn   DateTime?
-  amount   Int
+  id         String    @id @default(cuid())
+  orgId      String
+  billId     String
+  dueOn      DateTime
+  paidOn     DateTime?
+  amount     Int
   /// due | paid | skipped
-  status   String    @default("due")
-  paidById String?
+  status     String    @default("due")
+  paidById   String?
   /// When the "due soon" reminder went out (sent once per due date)
   remindedAt DateTime?
 
@@ -388,23 +410,23 @@ model BillPayment {
 
 /// Things the household owns, with warranty tracking
 model Possession {
-  id            String    @id @default(cuid())
-  orgId         String
-  name          String
-  nameAr        String?
-  category      String
-  room          String?
-  brand         String?
-  model         String?
-  serial        String?
-  purchasedOn   DateTime?
-  price         Int?
-  store         String?
-  warrantyUntil DateTime?
+  id                 String    @id @default(cuid())
+  orgId              String
+  name               String
+  nameAr             String?
+  category           String
+  room               String?
+  brand              String?
+  model              String?
+  serial             String?
+  purchasedOn        DateTime?
+  price              Int?
+  store              String?
+  warrantyUntil      DateTime?
   /// When the "warranty ending" reminder went out
   warrantyRemindedAt DateTime?
-  notes         String?
-  createdAt     DateTime  @default(now())
+  notes              String?
+  createdAt          DateTime  @default(now())
 
   org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
@@ -476,4 +498,458 @@ model SearchIndex {
 
   @@unique([entityType, entityId])
   @@index([orgId])
+}
+
+// ───────────────────────── Accounting ─────────────────────────
+//
+// Every money event (invoice, payment, bill, stock movement, approved claim,
+// payroll) writes a balanced journal entry. Reports read only the journal.
+
+/// Chart of accounts
+model Account {
+  id        String   @id @default(cuid())
+  orgId     String
+  code      String
+  name      String
+  nameAr    String?
+  /// asset | liability | equity | income | expense
+  type      String
+  /// Used by automatic postings: cash, bank, receivable, payable, inventory, grni,
+  /// sales, services, cogs, stockAdjust, salaries, salariesPayable, reimbursements,
+  /// capital, retained, discounts
+  role      String?
+  /// Created by Tamam; can be renamed but not deleted
+  isSystem  Boolean  @default(false)
+  archived  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  org   Organization  @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  lines JournalLine[]
+
+  @@unique([orgId, code])
+}
+
+model JournalEntry {
+  id          String    @id @default(cuid())
+  orgId       String
+  number      String
+  date        DateTime
+  memo        String?
+  /// manual | opening | invoice | payment | bill | receipt | stock | claim | payroll
+  sourceType  String
+  sourceId    String?
+  /// Set on an entry that cancels another one
+  reversesId  String?
+  /// Set on an entry that has been cancelled by a reversal
+  reversedAt  DateTime?
+  createdById String?
+  createdAt   DateTime  @default(now())
+
+  org   Organization  @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  lines JournalLine[]
+
+  @@unique([orgId, number])
+  @@index([orgId, date])
+  @@index([sourceType, sourceId])
+}
+
+model JournalLine {
+  id        String   @id @default(cuid())
+  orgId     String
+  entryId   String
+  accountId String
+  /// Same as the entry's date, kept here so reports need no join
+  date      DateTime
+  /// dirhams; one of debit/credit is zero
+  debit     Int      @default(0)
+  credit    Int      @default(0)
+  /// Customer or supplier, for receivable/payable ledgers
+  partyId   String?
+  memo      String?
+
+  org     Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  entry   JournalEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  account Account      @relation(fields: [accountId], references: [id])
+
+  @@index([orgId, accountId, date])
+  @@index([partyId])
+}
+
+// ───────────────────────── Sales, purchases, inventory ─────────────────────────
+
+/// Customers and suppliers. One record can be both.
+model Party {
+  id           String   @id @default(cuid())
+  orgId        String
+  name         String
+  nameAr       String?
+  isCustomer   Boolean  @default(false)
+  isSupplier   Boolean  @default(false)
+  contactName  String?
+  phone        String?
+  email        String?
+  address      String?
+  addressAr    String?
+  crNumber     String?
+  /// Days until an invoice or bill is due (0 = on receipt)
+  paymentTerms Int      @default(30)
+  /// dirhams; warn when open invoices would exceed it
+  creditLimit  Int?
+  notes        String?
+  archived     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  documents Document[]
+  payments  Payment[]
+
+  @@index([orgId])
+}
+
+model Item {
+  id                String    @id @default(cuid())
+  orgId             String
+  sku               String
+  name              String
+  nameAr            String?
+  /// product (stock is tracked) | service
+  kind              String    @default("product")
+  category          String?
+  /// pcs, box, ream, carton, set, hour ...
+  unit              String    @default("pcs")
+  /// dirhams per unit
+  salePrice         Int       @default(0)
+  purchasePrice     Int       @default(0)
+  /// Moving average cost per unit (dirhams), updated on every receipt
+  avgCost           Int       @default(0)
+  /// Quantities are stored in hundredths (250 = 2.5 units)
+  reorderLevel      Int?
+  reorderQty        Int?
+  barcode           String?
+  archived          Boolean   @default(false)
+  /// When the low-stock alert went out; cleared when stock is back above the level
+  lowStockAlertedAt DateTime?
+  createdAt         DateTime  @default(now())
+
+  org    Organization   @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  levels StockLevel[]
+  moves  StockMove[]
+  lines  DocumentLine[]
+
+  @@unique([orgId, sku])
+}
+
+/// Quantity on hand per item and warehouse (a business's branches are its warehouses)
+model StockLevel {
+  id       String @id @default(cuid())
+  orgId    String
+  itemId   String
+  campusId String
+  /// hundredths
+  qty      Int    @default(0)
+
+  org    Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  item   Item         @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  campus Campus       @relation(fields: [campusId], references: [id], onDelete: Cascade)
+
+  @@unique([itemId, campusId])
+}
+
+/// Every change in stock. StockLevel is the running sum of these.
+model StockMove {
+  id          String   @id @default(cuid())
+  orgId       String
+  itemId      String
+  campusId    String
+  date        DateTime
+  /// hundredths; positive in, negative out
+  qty         Int
+  /// dirhams per unit
+  unitCost    Int
+  /// opening | receipt | sale | adjustment | transfer
+  kind        String
+  sourceType  String?
+  sourceId    String?
+  note        String?
+  createdById String?
+  createdAt   DateTime @default(now())
+
+  org    Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  item   Item         @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  campus Campus       @relation(fields: [campusId], references: [id], onDelete: Cascade)
+
+  @@index([orgId, itemId, date])
+  @@index([sourceType, sourceId])
+}
+
+/// Quotations, invoices, purchase orders and supplier bills share one shape.
+model Document {
+  id          String    @id @default(cuid())
+  orgId       String
+  /// quote | invoice | po | bill
+  kind        String
+  number      String
+  partyId     String
+  /// Branch that sells (invoices) or warehouse that receives (POs, bills)
+  campusId    String?
+  date        DateTime
+  /// Invoices and bills: payment due. Quotes: valid until. POs: expected delivery.
+  dueDate     DateTime?
+  /// quote: draft | sent | accepted | declined | converted
+  /// invoice: draft | issued | partial | paid | void
+  /// po: draft | sent | partial | received | billed | cancelled
+  /// bill: draft | posted | partial | paid | void
+  status      String    @default("draft")
+  /// Customer's PO number, or the supplier's own invoice number
+  reference   String?
+  notes       String?
+  terms       String?
+  subtotal    Int       @default(0)
+  discount    Int       @default(0)
+  total       Int       @default(0)
+  /// Paid so far (sum of payment allocations)
+  paid        Int       @default(0)
+  /// Created from (quote → invoice, purchase order → bill)
+  sourceId    String?
+  createdById String
+  issuedAt    DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  org         Organization        @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  party       Party               @relation(fields: [partyId], references: [id])
+  lines       DocumentLine[]
+  allocations PaymentAllocation[]
+
+  @@unique([orgId, number])
+  @@index([orgId, kind, status])
+  @@index([partyId])
+}
+
+model DocumentLine {
+  id          String  @id @default(cuid())
+  orgId       String
+  documentId  String
+  sort        Int     @default(0)
+  itemId      String?
+  description String
+  /// hundredths
+  qty         Int
+  /// dirhams per unit
+  unitPrice   Int
+  /// basis points (1000 = 10%)
+  discountPct Int     @default(0)
+  /// dirhams, after discount
+  amount      Int
+  /// Bills without an item: the expense account to book to
+  accountId   String?
+  /// Purchase orders: quantity received so far (hundredths)
+  received    Int     @default(0)
+
+  org      Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  document Document     @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  item     Item?        @relation(fields: [itemId], references: [id])
+}
+
+/// Money received from customers (in) or paid to suppliers (out)
+model Payment {
+  id          String    @id @default(cuid())
+  orgId       String
+  number      String
+  /// in | out
+  direction   String
+  partyId     String
+  date        DateTime
+  amount      Int
+  /// cash | transfer | cheque | card
+  method      String
+  /// The cash or bank account the money went into or came out of
+  accountId   String
+  reference   String?
+  notes       String?
+  createdById String
+  voidedAt    DateTime?
+  createdAt   DateTime  @default(now())
+
+  org         Organization        @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  party       Party               @relation(fields: [partyId], references: [id])
+  allocations PaymentAllocation[]
+
+  @@unique([orgId, number])
+  @@index([orgId, date])
+}
+
+model PaymentAllocation {
+  id         String @id @default(cuid())
+  orgId      String
+  paymentId  String
+  documentId String
+  amount     Int
+
+  org      Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  payment  Payment      @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  document Document     @relation(fields: [documentId], references: [id], onDelete: Cascade)
+}
+
+// ───────────────────────── People ─────────────────────────
+
+model Employee {
+  id                 String    @id @default(cuid())
+  orgId              String
+  number             String
+  /// The person's Tamam login, if they have one (for self-service)
+  userId             String?
+  name               String
+  nameAr             String?
+  jobTitle           String?
+  jobTitleAr         String?
+  department         String?
+  campusId           String?
+  /// ISO 3166 alpha-2
+  nationality        String?
+  phone              String?
+  email              String?
+  /// Qatar ID (11 digits)
+  qid                String?
+  qidExpiry          DateTime?
+  /// For new arrivals who don't have a QID yet (WPS accepts it instead)
+  visaNumber         String?
+  passportNumber     String?
+  passportExpiry     DateTime?
+  joinedOn           DateTime
+  leftOn             DateTime?
+  /// active | terminated
+  status             String    @default("active")
+  /// Monthly amounts in dirhams
+  basicSalary        Int
+  housingAllowance   Int       @default(0)
+  transportAllowance Int       @default(0)
+  foodAllowance      Int       @default(0)
+  otherAllowance     Int       @default(0)
+  /// bank | cash
+  payMethod          String    @default("bank")
+  /// WPS bank short name (QNB, CBQ, DBQ ...)
+  bankShortName      String?
+  iban               String?
+  /// Days of paid annual leave per year (Qatar: at least 21, 28 after five years)
+  annualLeaveDays    Int       @default(21)
+  /// Leave days carried in when the record was created
+  leaveOpening       Int       @default(0)
+  qidRemindedAt      DateTime?
+  passportRemindedAt DateTime?
+  notes              String?
+  createdAt          DateTime  @default(now())
+
+  org        Organization    @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  attendance AttendanceDay[]
+  leave      LeaveRequest[]
+  payslips   Payslip[]
+
+  @@unique([orgId, number])
+}
+
+model AttendanceDay {
+  id          String   @id @default(cuid())
+  orgId       String
+  employeeId  String
+  /// Noon in Doha on the calendar day
+  date        DateTime
+  /// present | late | absent | leave | sick | holiday
+  status      String
+  /// "07:58"
+  checkIn     String?
+  checkOut    String?
+  overtimeMin Int      @default(0)
+  note        String?
+
+  org      Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  employee Employee     @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([employeeId, date])
+  @@index([orgId, date])
+}
+
+model LeaveRequest {
+  id            String    @id @default(cuid())
+  orgId         String
+  number        String
+  employeeId    String
+  /// annual | sick | unpaid | emergency | maternity | hajj
+  type          String
+  startDate     DateTime
+  endDate       DateTime
+  /// Working days covered
+  days          Int
+  reason        String?
+  /// submitted | approved | rejected | cancelled
+  status        String    @default("submitted")
+  requestedById String
+  decidedById   String?
+  decidedAt     DateTime?
+  decisionNote  String?
+  createdAt     DateTime  @default(now())
+
+  org      Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  employee Employee     @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId, number])
+  @@index([orgId, status])
+}
+
+model PayrollRun {
+  id              String    @id @default(cuid())
+  orgId           String
+  /// "2026-11"
+  month           String
+  /// draft | approved | paid
+  status          String    @default("draft")
+  totalGross      Int       @default(0)
+  totalDeductions Int       @default(0)
+  totalNet        Int       @default(0)
+  payDate         DateTime?
+  createdById     String
+  approvedById    String?
+  approvedAt      DateTime?
+  paidAt          DateTime?
+  createdAt       DateTime  @default(now())
+
+  org      Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  payslips Payslip[]
+
+  @@unique([orgId, month])
+}
+
+model Payslip {
+  id               String  @id @default(cuid())
+  orgId            String
+  runId            String
+  employeeId       String
+  /// Days paid in the month (out of 30)
+  workingDays      Int
+  absentDays       Int     @default(0)
+  unpaidLeaveDays  Int     @default(0)
+  basic            Int
+  housing          Int     @default(0)
+  transport        Int     @default(0)
+  food             Int     @default(0)
+  other            Int     @default(0)
+  /// hundredths of an hour
+  overtimeHours    Int     @default(0)
+  overtimePay      Int     @default(0)
+  bonus            Int     @default(0)
+  absenceDeduction Int     @default(0)
+  advanceDeduction Int     @default(0)
+  otherDeduction   Int     @default(0)
+  /// WPS deduction reason code (01, 02, 03, 04, 99)
+  deductionCode    String?
+  gross            Int
+  deductions       Int
+  net              Int
+  notes            String?
+
+  org      Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  run      PayrollRun   @relation(fields: [runId], references: [id], onDelete: Cascade)
+  employee Employee     @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([runId, employeeId])
 }

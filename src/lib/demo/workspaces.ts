@@ -3,6 +3,8 @@
 
 import type { Prisma, PrismaClient } from "../../generated/prisma/client";
 import { seedHomeDemo } from "./home";
+import { seedBusinessDemo } from "./business";
+import { makeIban } from "../payroll/banks";
 import { reindexOrg } from "../search/index-core";
 import { writeDemoLogo } from "./logos";
 
@@ -68,7 +70,7 @@ export async function seedWorkspaces(db: Db, passwordHash: string, now = new Dat
   });
   await seedHomeDemo(db, home.id, { hessa: users.hessa, khalid: users.khalid, noora: users.noora, maria: users.maria }, now);
 
-  // ── Business ── (modules arrive in stage 2)
+  // ── Business ──
   const biz = await db.organization.create({
     data: {
       type: "business",
@@ -81,18 +83,30 @@ export async function seedWorkspaces(db: Db, passwordHash: string, now = new Dat
       email: "accounts@sadeem.example",
       crNumber: "148392",
       brandColor: "#0B6E8A",
+      settings: {
+        fiscalYearStartMonth: 1,
+        sales: {
+          bankName: "Qatar National Bank, Salwa Road branch",
+          iban: makeIban("QA", "QNBA000000000110250367001"),
+          invoiceTerms: "Payment by bank transfer or cheque payable to Sadeem Office & Home Supplies W.L.L. Goods remain our property until paid in full.",
+          invoiceNotes: "Thank you for your business!",
+          quoteTerms: "Prices valid for 15 days. Delivery within Doha in 2 working days.",
+        },
+        payroll: { employerEid: "10448392", bankShortName: "QNB", iban: makeIban("QA", "QNBA000000000110250367001") },
+      },
     },
   });
-  const warehouse = await db.campus.create({ data: { orgId: biz.id, code: "SAL", name: "Salwa Road showroom", nameAr: "صالة عرض طريق سلوى" } });
-  await db.campus.create({ data: { orgId: biz.id, code: "BRK", name: "Birkat Al Awamer warehouse", nameAr: "مستودع بركة العوامر" } });
+  const showroom = await db.campus.create({ data: { orgId: biz.id, code: "SAL", name: "Salwa Road showroom", nameAr: "صالة عرض طريق سلوى" } });
+  const warehouse = await db.campus.create({ data: { orgId: biz.id, code: "BRK", name: "Birkat Al Awamer warehouse", nameAr: "مستودع بركة العوامر" } });
   await db.membership.createMany({
     data: [
       { orgId: biz.id, userId: users.khalid, role: "owner", title: "Managing partner", titleAr: "الشريك المدير" },
       { orgId: biz.id, userId: users.omar, role: "admin", title: "Operations manager", titleAr: "مدير العمليات" },
       { orgId: biz.id, userId: users.priya, role: "accountant", title: "Chief accountant", titleAr: "رئيسة الحسابات" },
-      { orgId: biz.id, userId: users.joseph, role: "employee", title: "Storekeeper", titleAr: "أمين المخزن", campusId: warehouse.id },
+      { orgId: biz.id, userId: users.joseph, role: "employee", title: "Storekeeper", titleAr: "أمين المخزن", campusId: warehouse.id, extraPermissions: "inventory.manage" },
     ],
   });
+  await seedBusinessDemo(db as PrismaClient, biz.id, { khalid: users.khalid, omar: users.omar, priya: users.priya, joseph: users.joseph }, { showroom: showroom.id, warehouse: warehouse.id }, now);
 
   // ── School group ── (modules arrive in stage 3)
   const school = await db.organization.create({

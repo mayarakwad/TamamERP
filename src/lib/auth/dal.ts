@@ -5,7 +5,7 @@ import { notFound, redirect } from "next/navigation";
 import { db } from "../db";
 import { readSession } from "./session";
 import { parsePrefs, type Prefs } from "../prefs";
-import { can, type OrgType, type Permission, type Role } from "../rbac";
+import { can, parseExtras, type OrgType, type Permission, type Role } from "../rbac";
 
 // Data Access Layer: the only place that decides who the viewer is and what
 // workspace they're in. Pages and actions call these instead of reading
@@ -45,13 +45,15 @@ export const getWorkspace = cache(async (slug: string) => {
   });
   if (!membership) notFound();
   const role = membership.role as Role;
+  const extras = parseExtras(membership.extraPermissions);
   return {
     viewer,
     membership,
     org: membership.org,
     orgType: membership.org.type as OrgType,
     role,
-    can: (p: Permission) => can(role, p),
+    extras,
+    can: (p: Permission) => can(role, p, extras),
   };
 });
 

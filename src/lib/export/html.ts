@@ -2,6 +2,7 @@ import "server-only";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { formatCell } from "../datasets/format-cell";
+import { columnLabel } from "../datasets/types";
 import { generatedLine, isNumeric, type ExportDoc } from "./doc";
 
 // One HTML layout for print and PDF: logo, organization, title, generation
@@ -90,7 +91,7 @@ export function letterhead(doc: ExportDoc) {
 export function renderTableHtml(doc: ExportDoc, mode: "print" | "pdf"): string {
   const cols = doc.columns;
   const cls = (c: (typeof cols)[number]) => (isNumeric(c) ? "num" : c.type === "date" || c.type === "enum" ? "nowrap" : "");
-  const thead = `<thead><tr>${cols.map((c) => `<th class="${isNumeric(c) ? "num" : ""}">${esc(doc.t(c.label))}</th>`).join("")}</tr></thead>`;
+  const thead = `<thead><tr>${cols.map((c) => `<th class="${isNumeric(c) ? "num" : ""}">${esc(columnLabel(c, doc.t))}</th>`).join("")}</tr></thead>`;
   const tbody = `<tbody>${doc.rows.map((r) => `<tr>${cols.map((c) => `<td class="${cls(c)}">${esc(formatCell(c, r.cells[c.key], doc.fmt, doc.t))}</td>`).join("")}</tr>`).join("")}</tbody>`;
   const tfoot = Object.keys(doc.totals).length
     ? `<tfoot><tr>${cols

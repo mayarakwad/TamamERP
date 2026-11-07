@@ -3,6 +3,9 @@ import {
   CircleEllipsis,
   Fuel,
   Gift,
+  Landmark,
+  Paperclip,
+  Plane,
   HeartPulse,
   PencilRuler,
   Receipt,
@@ -27,6 +30,9 @@ const ICONS: Record<string, LucideIcon> = {
   wrench: Wrench,
   gift: Gift,
   "circle-ellipsis": CircleEllipsis,
+  plane: Plane,
+  paperclip: Paperclip,
+  landmark: Landmark,
 };
 
 export function CategoryIcon({ icon, className }: { icon: string; className?: string }) {

@@ -4,6 +4,7 @@ import { Clock, Download, Eye, Link2Off } from "lucide-react";
 import { db } from "@/lib/db";
 import { lookupShare, docFromSnapshot } from "@/lib/share";
 import { formatCell } from "@/lib/datasets/format-cell";
+import { columnLabel } from "@/lib/datasets/types";
 import { isNumeric, generatedLine } from "@/lib/export/doc";
 import { getI18n } from "@/lib/i18n/server";
 import { buttonClass } from "@/components/ui/button";
@@ -76,7 +77,7 @@ export default async function SharedPage({ params }: PageProps<"/s/[token]">) {
             <tr style={{ background: doc.brand.brandColor }}>
               {doc.columns.map((c) => (
                 <th key={c.key} className={`px-4 py-2.5 text-xs font-semibold whitespace-nowrap text-white ${isNumeric(c) ? "text-end" : "text-start"}`}>
-                  {t(c.label)}
+                  {columnLabel(c, t)}
                 </th>
               ))}
             </tr>

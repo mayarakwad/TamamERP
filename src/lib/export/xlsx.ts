@@ -1,5 +1,6 @@
 import ExcelJS from "exceljs";
 import { rawCell } from "../datasets/format-cell";
+import { columnLabel } from "../datasets/types";
 import { currencyLabel, generatedLine, isNumeric, type ExportDoc } from "./doc";
 
 // Real spreadsheets: numbers stay numbers (with currency formats), dates are
@@ -85,7 +86,7 @@ export async function renderXlsx(doc: ExportDoc): Promise<Buffer> {
   const header = ws.getRow(headerRowNo);
   cols.forEach((c, i) => {
     const cell = header.getCell(i + 1);
-    cell.value = c.type === "money" ? `${doc.t(c.label)} (${currencyLabel(doc)})` : doc.t(c.label);
+    cell.value = c.type === "money" ? `${columnLabel(c, doc.t)} (${currencyLabel(doc)})` : columnLabel(c, doc.t);
     cell.font = { name: FONT, bold: true, color: { argb: "FFFFFFFF" } };
     cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: brandArgb } };
     cell.alignment = { ...align(c), wrapText: true };

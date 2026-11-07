@@ -80,6 +80,58 @@ export async function indexMember(db: Db, membershipId: string) {
   });
 }
 
+const DOC_HREF: Record<string, string> = { quote: "sales/quotations", invoice: "sales/invoices", po: "purchases/orders", bill: "purchases/bills" };
+
+export async function indexParty(db: Db, id: string) {
+  const p = await db.party.findUnique({ where: { id } });
+  if (!p || p.archived) return removeFromIndex(db, "party", id);
+  await upsert(db, {
+    orgId: p.orgId,
+    entityType: "party",
+    entityId: p.id,
+    title: p.name,
+    subtitle: [p.isCustomer && "Customer", p.isSupplier && "Supplier", p.contactName, p.phone].filter(Boolean).join(" · "),
+    href: `${p.isCustomer ? "sales/customers" : "purchases/suppliers"}/${p.id}`,
+    parts: [p.nameAr, p.email, p.crNumber, p.addressAr, p.address],
+  });
+}
+
+export async function indexItem(db: Db, id: string) {
+  const i = await db.item.findUnique({ where: { id } });
+  if (!i || i.archived) return removeFromIndex(db, "item", id);
+  await upsert(db, { orgId: i.orgId, entityType: "item", entityId: i.id, title: `${i.sku} · ${i.name}`, subtitle: i.category, href: `inventory/items/${i.id}`, parts: [i.nameAr, i.barcode] });
+}
+
+export async function indexDocument(db: Db, id: string) {
+  const d = await db.document.findUnique({ where: { id }, include: { party: true } });
+  if (!d) return removeFromIndex(db, "document", id);
+  await upsert(db, {
+    orgId: d.orgId,
+    entityType: "document",
+    entityId: d.id,
+    title: `${d.number} · ${d.party.name}`,
+    subtitle: `${(d.total / 100).toFixed(2)} · ${d.status}`,
+    href: `${DOC_HREF[d.kind]}/${d.id}`,
+    parts: [d.party.nameAr, d.reference, d.kind],
+    // Purchase orders are visible to storekeepers too; everything else needs finance access.
+    restrictedTo: d.kind,
+  });
+}
+
+export async function indexEmployee(db: Db, id: string) {
+  const e = await db.employee.findUnique({ where: { id } });
+  if (!e) return removeFromIndex(db, "employee", id);
+  await upsert(db, {
+    orgId: e.orgId,
+    entityType: "employee",
+    entityId: e.id,
+    title: `${e.name} · ${e.number}`,
+    subtitle: [e.jobTitle, e.department].filter(Boolean).join(" · "),
+    href: `hr/employees/${e.id}`,
+    parts: [e.nameAr, e.jobTitleAr, e.qid, e.phone, e.email],
+  });
+}
+
 /** Rebuild the whole index for one workspace (seed, restore, duplicate). */
 export async function reindexOrg(db: Db, orgId: string) {
   await db.searchIndex.deleteMany({ where: { orgId } });
@@ -87,4 +139,8 @@ export async function reindexOrg(db: Db, orgId: string) {
   for (const b of await db.recurringBill.findMany({ where: { orgId }, select: { id: true } })) await indexBill(db, b.id);
   for (const p of await db.possession.findMany({ where: { orgId }, select: { id: true } })) await indexPossession(db, p.id);
   for (const m of await db.membership.findMany({ where: { orgId }, select: { id: true } })) await indexMember(db, m.id);
+  for (const p of await db.party.findMany({ where: { orgId, archived: false }, select: { id: true } })) await indexParty(db, p.id);
+  for (const i of await db.item.findMany({ where: { orgId, archived: false }, select: { id: true } })) await indexItem(db, i.id);
+  for (const d of await db.document.findMany({ where: { orgId }, select: { id: true } })) await indexDocument(db, d.id);
+  for (const e of await db.employee.findMany({ where: { orgId }, select: { id: true } })) await indexEmployee(db, e.id);
 }

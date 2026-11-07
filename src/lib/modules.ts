@@ -36,6 +36,9 @@ import {
   DatabaseBackup,
   Building,
   BadgeDollarSign,
+  Banknote,
+  BookText,
+  Scale,
   Armchair,
   NotebookPen,
   type LucideIcon,
@@ -78,16 +81,20 @@ export const NAV: NavItem[] = [
   { id: "invoices", path: "sales/invoices", label: "nav.invoices", desc: "modules.invoices", icon: ReceiptText, group: "nav.groupSales", types: ["business"], perms: ["finance.view"], stage: "2" },
   { id: "payments-in", path: "sales/payments", label: "nav.paymentsIn", desc: "modules.paymentsIn", icon: HandCoins, group: "nav.groupSales", types: ["business"], perms: ["finance.view"], stage: "2" },
   { id: "suppliers", path: "purchases/suppliers", label: "nav.suppliers", desc: "modules.suppliers", icon: Truck, group: "nav.groupPurchases", types: ["business"], perms: ["finance.view"], stage: "2" },
-  { id: "purchase-orders", path: "purchases/orders", label: "nav.purchaseOrders", desc: "modules.purchaseOrders", icon: ClipboardList, group: "nav.groupPurchases", types: ["business"], perms: ["finance.view"], stage: "2" },
+  { id: "purchase-orders", path: "purchases/orders", label: "nav.purchaseOrders", desc: "modules.purchaseOrders", icon: ClipboardList, group: "nav.groupPurchases", types: ["business"], perms: ["finance.view", "inventory.manage"], stage: "2" },
   { id: "purchase-bills", path: "purchases/bills", label: "nav.purchaseBills", desc: "modules.purchaseBills", icon: FileSpreadsheet, group: "nav.groupPurchases", types: ["business"], perms: ["finance.view"], stage: "2" },
-  { id: "items", path: "inventory/items", label: "nav.items", desc: "modules.items", icon: Package, group: "nav.groupInventory", types: ["business"], perms: ["finance.view"], stage: "2" },
-  { id: "stock", path: "inventory/stock", label: "nav.stock", desc: "modules.stock", icon: Warehouse, group: "nav.groupInventory", types: ["business"], perms: ["finance.view"], stage: "2" },
-  { id: "expenses", path: "expenses", label: "nav.expenses", desc: "modules.expenses", icon: Wallet, group: "nav.groupFinance", types: ["business", "school"], perms: ["claims.submit"], stage: "2" },
+  { id: "payments-out", path: "purchases/payments", label: "nav.paymentsOut", desc: "modules.paymentsOut", icon: Banknote, group: "nav.groupPurchases", types: ["business"], perms: ["finance.view"], stage: "2" },
+  { id: "items", path: "inventory/items", label: "nav.items", desc: "modules.items", icon: Package, group: "nav.groupInventory", types: ["business"], perms: ["finance.view", "inventory.manage"], stage: "2" },
+  { id: "stock", path: "inventory/stock", label: "nav.stock", desc: "modules.stock", icon: Warehouse, group: "nav.groupInventory", types: ["business"], perms: ["finance.view", "inventory.manage"], stage: "2" },
+  { id: "expenses", path: "claims", label: "nav.expenses", desc: "modules.expenses", icon: Wallet, group: "nav.groupFinance", types: ["business", "school"], perms: ["claims.submit"], stage: "2" },
   { id: "reports", path: "reports", label: "nav.reports", desc: "modules.reports", icon: BarChart3, group: "nav.groupFinance", types: ["business"], perms: ["finance.view"], stage: "2" },
+  { id: "accounts", path: "finance/accounts", label: "nav.accounts", desc: "modules.accounts", icon: BookText, group: "nav.groupFinance", types: ["business"], perms: ["finance.view"], stage: "2" },
+  { id: "journals", path: "finance/journals", label: "nav.journals", desc: "modules.journals", icon: Scale, group: "nav.groupFinance", types: ["business"], perms: ["finance.view"], stage: "2" },
   { id: "employees", path: "hr/employees", label: "nav.employees", desc: "modules.employees", icon: Users, group: "nav.groupPeople", types: ["business"], perms: ["hr.view"], stage: "2" },
   { id: "attendance", path: "hr/attendance", label: "nav.attendance", desc: "modules.attendance", icon: CalendarCheck, group: "nav.groupPeople", types: ["business"], stage: "2" },
   { id: "leave", path: "hr/leave", label: "nav.leave", desc: "modules.leave", icon: CalendarRange, group: "nav.groupPeople", types: ["business", "school"], perms: ["claims.submit", "hr.view"], stage: "2" },
   { id: "payroll", path: "hr/payroll", label: "nav.payroll", desc: "modules.payroll", icon: BadgeDollarSign, group: "nav.groupPeople", types: ["business", "school"], perms: ["payroll.run", "hr.manage"], stage: "2" },
+  { id: "payslips", path: "hr/payslips", label: "nav.payslips", desc: "modules.payslips", icon: FileText, group: "nav.groupPeople", types: ["business"], roles: ["employee", "accountant", "admin"], stage: "2" },
 
   // ── School ──
   { id: "school-dashboard", path: "", label: "nav.dashboard", icon: LayoutDashboard, group: "nav.groupMain", types: ["school"], stage: "1a" },
@@ -116,7 +123,10 @@ export const NAV: NavItem[] = [
 ];
 
 /** Pages already built (everything else shows a "coming in stage N" page). */
-export const READY = new Set(["home-dashboard", "biz-dashboard", "school-dashboard", "appearance", "profile", "claims", "budgets", "bills", "things", "summary", "workspace", "members", "activity", "data"]);
+export const READY = new Set([
+  "home-dashboard", "biz-dashboard", "school-dashboard", "appearance", "profile", "claims", "budgets", "bills", "things", "summary", "workspace", "members", "activity", "data",
+  "customers", "quotations", "invoices", "payments-in", "suppliers", "purchase-orders", "purchase-bills", "payments-out", "items", "stock", "expenses", "reports", "accounts", "journals", "employees", "attendance", "leave", "payroll", "payslips",
+]);
 
 const GROUP_ORDER: MessageKey[] = [
   "nav.groupMain",
@@ -132,12 +142,12 @@ const GROUP_ORDER: MessageKey[] = [
 ];
 
 /** Pages this role can open in this kind of workspace, in sidebar order. */
-export function navFor(type: OrgType, role: Role): NavItem[] {
+export function navFor(type: OrgType, role: Role, extras: readonly Permission[] = []): NavItem[] {
   return NAV.filter(
     (n) =>
       n.types.includes(type) &&
       (!n.roles || n.roles.includes(role)) &&
-      (!n.perms || n.perms.some((p) => can(role, p))),
+      (!n.perms || n.perms.some((p) => can(role, p, extras))),
   ).sort((a, b) => GROUP_ORDER.indexOf(a.group) - GROUP_ORDER.indexOf(b.group));
 }
 

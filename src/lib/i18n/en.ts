@@ -1,6 +1,8 @@
 // English messages. This file is the source of truth for message keys; the
 // Arabic file must provide the same shape (TypeScript enforces it).
 
+import { enBiz } from "./en-biz";
+
 export const en = {
   app: {
     name: "Tamam",
@@ -27,6 +29,9 @@ export const en = {
     off: "Off",
     english: "English",
     arabic: "العربية",
+    delete: "Delete",
+    all: "All",
+    new: "New",
   },
   orgTypes: {
     business: "Business",
@@ -101,6 +106,10 @@ export const en = {
     quotations: "Quotations",
     invoices: "Invoices",
     paymentsIn: "Payments received",
+    paymentsOut: "Payments made",
+    accounts: "Chart of accounts",
+    journals: "Journal entries",
+    payslips: "My payslips",
     purchases: "Purchases",
     suppliers: "Suppliers",
     purchaseOrders: "Purchase orders",
@@ -186,6 +195,10 @@ export const en = {
     activity: "Who changed what and when, including sign-ins and exports.",
     data: "Download a full backup, restore one, or duplicate this workspace.",
     flow: "Connect your own AI key, pick a model, and set a monthly limit.",
+    paymentsOut: "Money paid to suppliers, matched to their bills.",
+    accounts: "The chart of accounts with live balances.",
+    journals: "Every journal entry, plus manual entries for opening balances and adjustments.",
+    payslips: "Your monthly payslips, ready to print.",
   },
   shell: {
     searchPlaceholder: "Search or jump to…",
@@ -445,6 +458,22 @@ export const en = {
     due: "Due",
     paid: "Paid",
     skipped: "Skipped",
+    sent: "Sent",
+    accepted: "Accepted",
+    declined: "Declined",
+    converted: "Invoiced",
+    issued: "Open",
+    posted: "Open",
+    open: "Open",
+    partial: "Part paid",
+    partReceived: "Part received",
+    overdue: "Overdue",
+    void: "Void",
+    cancelled: "Cancelled",
+    received: "Received",
+    billed: "Billed",
+    active: "Active",
+    terminated: "Left",
   },
   claims: {
     title: "Claims",
@@ -760,6 +789,8 @@ export const en = {
     saved: "Workspace saved",
     preview: "Document preview",
     sample: "Sample document",
+    crNumber: "CR no.",
+    addressPlaceholder: "Building, street, zone, area",
   },
   members: {
     title: "Members & roles",
@@ -871,7 +902,9 @@ export const en = {
     invalidEmail: "Enter a valid email",
     tooShort: "Too short",
   },
+  ...enBiz,
 } as const;
 
 type Widen<T> = T extends string ? string : { [K in keyof T]: Widen<T[K]> };
 export type Messages = Widen<typeof en>;
+export type BizMessages = Widen<typeof enBiz>;

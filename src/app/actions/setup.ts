@@ -14,6 +14,7 @@ import { runSystemChecks, type SystemCheck } from "@/lib/system";
 import { isInstalled, normalizeSetupKey, removeSetupKeyFile, setupKeyMatches } from "@/lib/system/setup-key";
 import { STORAGE_DIR } from "@/lib/storage";
 import { createHomeDefaults } from "@/lib/demo/home";
+import { ensureBusinessDefaults } from "@/lib/ledger/chart";
 import { DEMO_PASSWORD, DEMO_PEOPLE, seedWorkspaces } from "@/lib/demo/workspaces";
 import { writePrefsCookie } from "./prefs";
 import { SETUP_CURRENCIES } from "@/lib/system/options";
@@ -196,6 +197,7 @@ export async function install(formData: FormData): Promise<InstallResult> {
         }
       } else if (workspace.type === "business") {
         await tx.campus.create({ data: { orgId: org.id, name: "Main branch", nameAr: "الفرع الرئيسي", code: "MAIN" } });
+        await ensureBusinessDefaults(tx, org.id);
       } else {
         await createHomeDefaults(tx, org.id);
       }
@@ -230,7 +232,7 @@ export async function install(formData: FormData): Promise<InstallResult> {
       });
       return { user, org };
     },
-    { timeout: 60_000 },
+    { timeout: 300_000 },
   );
 
   if (logo) {

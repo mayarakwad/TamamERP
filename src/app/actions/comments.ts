@@ -28,6 +28,20 @@ export async function addComment(slug: string, entityType: string, entityId: str
     title = c.number;
     href = `claims/${entityId}`;
   }
+  if (entityType === "document") {
+    const d = await db.document.findUniqueOrThrow({ where: { id: entityId } });
+    participants.add(d.createdById);
+    title = d.number;
+    href = `${{ quote: "sales/quotations", invoice: "sales/invoices", po: "purchases/orders", bill: "purchases/bills" }[d.kind]}/${entityId}`;
+  }
+  if (entityType === "leave") {
+    const l = await db.leaveRequest.findUniqueOrThrow({ where: { id: entityId }, include: { employee: true } });
+    participants.add(l.requestedById);
+    if (l.employee.userId) participants.add(l.employee.userId);
+    if (l.decidedById) participants.add(l.decidedById);
+    title = l.number;
+    href = `hr/leave?request=${entityId}`;
+  }
   (await db.comment.findMany({ where: { entityType, entityId }, select: { authorId: true } })).forEach((c) => participants.add(c.authorId));
 
   if (title) {

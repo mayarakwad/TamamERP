@@ -1,7 +1,7 @@
 import "server-only";
 import { db } from "../db";
 import { getViewer } from "./dal";
-import { can, type OrgType, type Permission, type Role } from "../rbac";
+import { can, parseExtras, type OrgType, type Permission, type Role } from "../rbac";
 
 /**
  * Like getWorkspace(), but for route handlers: returns null instead of
@@ -16,5 +16,6 @@ export async function getWorkspaceForApi(slug: string) {
   });
   if (!membership) return null;
   const role = membership.role as Role;
-  return { viewer, membership, org: membership.org, orgType: membership.org.type as OrgType, role, can: (p: Permission) => can(role, p) };
+  const extras = parseExtras(membership.extraPermissions);
+  return { viewer, membership, org: membership.org, orgType: membership.org.type as OrgType, role, extras, can: (p: Permission) => can(role, p, extras) };
 }

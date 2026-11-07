@@ -47,7 +47,7 @@ export function CommandPalette({ data, open, onOpenChange }: { data: ShellData; 
     onOpenChange(false);
     fn();
   };
-  const items = navFor(data.orgType, data.role);
+  const items = navFor(data.orgType, data.role, data.extras);
   const itemClass = "flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-fg data-[selected=true]:bg-accent-soft data-[selected=true]:text-accent";
   const isDark = prefs.mode === "dark" || (prefs.mode === "system" && typeof document !== "undefined" && document.documentElement.dataset.scheme === "dark");
 

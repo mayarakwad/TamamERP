@@ -10,7 +10,7 @@ import { Modal } from "@/components/ui/dialog";
 import { Segmented, Switch } from "@/components/ui/controls";
 import { Input } from "@/components/ui/input";
 import { formatCell, rawCell } from "@/lib/datasets/format-cell";
-import type { DatasetResult } from "@/lib/datasets/types";
+import { type DatasetResult, columnLabel } from "@/lib/datasets/types";
 import { createShareLink } from "@/app/actions/share";
 import type { MessageKey } from "@/lib/i18n";
 
@@ -26,10 +26,10 @@ export function DataToolbar({ slug, dataset, query, result, canShare }: { slug: 
 
   async function copy() {
     const cols = result.columns;
-    const tsv = [cols.map((c) => t(c.label)).join("\t"), ...result.rows.map((r) => cols.map((c) => String(rawCell(c, r.cells[c.key], t)).replace(/[\t\n]/g, " ")).join("\t"))].join("\r\n");
+    const tsv = [cols.map((c) => columnLabel(c, t)).join("\t"), ...result.rows.map((r) => cols.map((c) => String(rawCell(c, r.cells[c.key], t)).replace(/[\t\n]/g, " ")).join("\t"))].join("\r\n");
     const align = (c: (typeof cols)[number]) => (c.type === "money" || c.type === "number" || c.type === "percent" ? "end" : "start");
     const html = `<table dir="${dir}" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:13px"><thead><tr>${cols
-      .map((c) => `<th style="border:1px solid #ddd;background:#f4f1ee;padding:6px 10px;text-align:${align(c)}">${escapeHtml(t(c.label))}</th>`)
+      .map((c) => `<th style="border:1px solid #ddd;background:#f4f1ee;padding:6px 10px;text-align:${align(c)}">${escapeHtml(columnLabel(c, t))}</th>`)
       .join("")}</tr></thead><tbody>${result.rows
       .map((r) => `<tr>${cols.map((c) => `<td style="border:1px solid #ddd;padding:6px 10px;text-align:${align(c)}">${escapeHtml(formatCell(c, r.cells[c.key], fmt, t))}</td>`).join("")}</tr>`)
       .join("")}</tbody></table>`;

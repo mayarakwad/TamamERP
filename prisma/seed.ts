@@ -16,7 +16,8 @@ async function main() {
   const started = Date.now();
   await wipeAll(db);
   const passwordHash = await hash(DEMO_PASSWORD, { memoryCost: 19456, timeCost: 2, parallelism: 1 });
-  const { home, biz, school } = await seedWorkspaces(db, passwordHash);
+  // One transaction: far fewer disk syncs, and a failed seed leaves nothing half-done.
+  const { home, biz, school } = await db.$transaction((tx) => seedWorkspaces(tx, passwordHash), { timeout: 600_000, maxWait: 20_000 });
   // The demo counts as an installed server (open sign-up, demo accounts shown).
   await db.systemSetting.create({ data: { id: 1, installedAt: new Date(), demoData: true, allowSignup: true, version: "demo" } });
   const claims = await db.claim.count();

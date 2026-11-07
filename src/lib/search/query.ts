@@ -29,6 +29,10 @@ export async function searchRecords(ws: Viewer, slug: string, query: string): Pr
     .filter((r) => {
       if (r.entityType === "claim") return ws.can("claims.viewAll") || r.restrictedTo === ws.viewer.id;
       if (r.entityType === "member") return ws.can("members.manage");
+      if (r.entityType === "party") return ws.can("finance.view");
+      if (r.entityType === "item") return ws.can("finance.view") || ws.can("inventory.manage");
+      if (r.entityType === "document") return ws.can("finance.view") || (r.restrictedTo === "po" && ws.can("inventory.manage"));
+      if (r.entityType === "employee") return ws.can("hr.view");
       return true;
     })
     .slice(0, 20)
