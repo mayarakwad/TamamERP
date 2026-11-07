@@ -3,6 +3,7 @@ import type { Workspace } from "../auth/dal";
 import type { Dataset } from "./types";
 import { claimsDataset } from "./claims";
 import { billsDataset, budgetsDataset, possessionsDataset, summaryDataset } from "./home";
+import { activityDataset } from "./activity";
 
 // Every exportable table in the app. Add new datasets here.
 const DATASETS: Record<string, Dataset<Workspace>> = {
@@ -11,6 +12,7 @@ const DATASETS: Record<string, Dataset<Workspace>> = {
   bills: billsDataset,
   possessions: possessionsDataset,
   summary: summaryDataset,
+  activity: activityDataset,
 };
 
 export function getDataset(id: string): Dataset<Workspace> | undefined {

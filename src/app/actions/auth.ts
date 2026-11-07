@@ -33,7 +33,7 @@ function getDummyHash() {
 
 function safeNext(next: FormDataEntryValue | null): string | null {
   const n = typeof next === "string" ? next : "";
-  return n.startsWith("/w/") && !n.startsWith("//") ? n : null;
+  return (n.startsWith("/w/") || n.startsWith("/invite/")) && !n.startsWith("//") ? n : null;
 }
 
 export async function login(_prev: FormState, formData: FormData): Promise<FormState> {
