@@ -62,9 +62,11 @@ body {
   background: color-mix(in oklch, var(--accent) 28%, transparent);
 }
 
-:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
 }
 
 .tabular {

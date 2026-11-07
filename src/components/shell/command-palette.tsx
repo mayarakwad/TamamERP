@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Command } from "cmdk";
 import { Dialog } from "radix-ui";
-import { Languages, Moon, Palette, Search, Sun } from "lucide-react";
+import { Armchair, CalendarDays, Languages, Moon, Palette, Receipt, Search, Sun, User } from "lucide-react";
 import { useI18n, usePrefs } from "@/components/providers";
 import { navFor } from "@/lib/modules";
 import { THEMES } from "@/lib/themes";
@@ -17,6 +17,20 @@ export function CommandPalette({ data, open, onOpenChange }: { data: ShellData; 
   const { t, locale, dir } = useI18n();
   const { prefs, update } = usePrefs();
   const router = useRouter();
+  const [query, setQuery] = useState("");
+  const [hits, setHits] = useState<{ type: string; title: string; subtitle: string | null; href: string }[]>([]);
+
+  // Search records as you type (debounced). Arabic letter forms are normalized on the server.
+  useEffect(() => {
+    if (query.trim().length < 2) return;
+    const id = setTimeout(async () => {
+      const res = await fetch(`/api/w/${data.slug}/search?q=${encodeURIComponent(query)}`).catch(() => null);
+      if (res?.ok) setHits((await res.json()).hits);
+    }, 180);
+    return () => clearTimeout(id);
+  }, [query, data.slug]);
+  const visibleHits = query.trim().length >= 2 ? hits : [];
+  const hitIcon = (type: string) => (type === "claim" ? Receipt : type === "bill" ? CalendarDays : type === "possession" ? Armchair : User);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -49,11 +63,27 @@ export function CommandPalette({ data, open, onOpenChange }: { data: ShellData; 
           <Command loop className="flex max-h-[min(70vh,32rem)] flex-col">
             <div className="flex items-center gap-3 border-b border-line px-4">
               <Search className="size-4 text-subtle" />
-              <Command.Input autoFocus placeholder={t("palette.placeholder")} className="h-14 flex-1 bg-transparent text-base outline-none placeholder:text-subtle" />
+              <Command.Input autoFocus value={query} onValueChange={setQuery} placeholder={t("palette.placeholder")} className="h-14 flex-1 bg-transparent text-base outline-none placeholder:text-subtle" />
               <kbd className="rounded-md border border-line px-1.5 py-0.5 text-[0.65rem] text-subtle">Esc</kbd>
             </div>
             <Command.List className="overflow-y-auto p-2">
               <Command.Empty className="px-3 py-8 text-center text-sm text-muted">{t("palette.empty")}</Command.Empty>
+              {visibleHits.length > 0 && (
+                <Command.Group heading={t("palette.records")}>
+                  {visibleHits.map((h) => {
+                    const Icon = hitIcon(h.type);
+                    return (
+                      <Command.Item key={h.href} value={`record ${h.href}`} keywords={[query]} onSelect={() => run(() => router.push(h.href))} className={itemClass}>
+                        <Icon className="size-4 shrink-0 text-muted" />
+                        <span className="min-w-0">
+                          <span className="block truncate">{h.title}</span>
+                          {h.subtitle && <span className="block truncate text-xs text-muted">{h.subtitle}</span>}
+                        </span>
+                      </Command.Item>
+                    );
+                  })}
+                </Command.Group>
+              )}
               <Command.Group heading={t("palette.pages")}>
                 {items.map((item) => (
                   <Command.Item

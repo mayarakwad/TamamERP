@@ -10,6 +10,7 @@ import { Sidebar, SidebarNav } from "./sidebar";
 import { UserMenu } from "./user-menu";
 import { CommandPalette } from "./command-palette";
 import { FlowSheet } from "./flow-sheet";
+import { NotificationBell } from "./notification-bell";
 import { WorkspaceSwitcher } from "./workspace-switcher";
 import type { ShellData } from "./types";
 
@@ -98,6 +99,7 @@ export function Shell({ data, children }: { data: ShellData; children: React.Rea
 
             <div className="ms-auto flex items-center gap-1.5">
               <QuickToggles className="hidden sm:flex" />
+              <NotificationBell slug={data.slug} />
               <button
                 type="button"
                 onClick={() => setFlowOpen(true)}

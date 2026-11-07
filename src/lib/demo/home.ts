@@ -245,8 +245,8 @@ export async function seedHomeDemo(db: Db, orgId: string, people: HomePeople, no
 async function seedBills(db: Db, orgId: string, cats: Record<CategoryKey, string>, people: HomePeople, now: Date, r: Rng) {
   const bills = [
     { name: "Electricity & water", nameAr: "الكهرباء والماء", provider: "Kahramaa", amount: 780, variable: true, dueInDays: 12, frequency: "monthly", autopay: false, cat: "bills" as const },
-    { name: "Home fibre 1 Gbps", nameAr: "الألياف المنزلية ١ جيجابت", provider: "Ooredoo", amount: 450, variable: false, dueInDays: 3, frequency: "monthly", autopay: false, cat: "bills" as const },
-    { name: "Mobile lines (×3)", nameAr: "خطوط الجوال (٣)", provider: "Vodafone Qatar", amount: 375, variable: false, dueInDays: 5, frequency: "monthly", autopay: true, cat: "bills" as const },
+    { name: "Home fibre 1 Gbps", nameAr: "ألياف منزلية 1 جيجابت", provider: "Ooredoo", amount: 450, variable: false, dueInDays: 3, frequency: "monthly", autopay: false, cat: "bills" as const },
+    { name: "Mobile lines (×3)", nameAr: "3 خطوط جوال", provider: "Vodafone Qatar", amount: 375, variable: false, dueInDays: 5, frequency: "monthly", autopay: true, cat: "bills" as const },
     { name: "Helper salary", nameAr: "راتب المساعدة المنزلية", provider: "Bank transfer", amount: 1800, variable: false, dueInDays: 24, frequency: "monthly", autopay: false, cat: "bills" as const },
     { name: "Streaming (OSN+ & Netflix)", nameAr: "اشتراكات البث", provider: "OSN+ / Netflix", amount: 98, variable: false, dueInDays: 17, frequency: "monthly", autopay: true, cat: "bills" as const },
     { name: "School fees, term 2", nameAr: "الرسوم المدرسية، الفصل الثاني", provider: "Al Manara International School", amount: 14500, variable: false, dueInDays: 58, frequency: "quarterly", autopay: false, cat: "school" as const },
@@ -289,18 +289,18 @@ async function seedBills(db: Db, orgId: string, cats: Record<CategoryKey, string
 
 async function seedPossessions(db: Db, orgId: string, now: Date) {
   const items = [
-    { name: 'Samsung 65" QLED TV', nameAr: "تلفاز سامسونج ٦٥ بوصة", category: "Electronics", room: "Majlis", brand: "Samsung", model: "QN65Q80D", purchasedDaysAgo: 690, price: 4299, store: "Jarir Bookstore", warrantyDaysLeft: 40 },
+    { name: 'Samsung 65" QLED TV', nameAr: "تلفاز سامسونج 65 بوصة", category: "Electronics", room: "Majlis", brand: "Samsung", model: "QN65Q80D", purchasedDaysAgo: 690, price: 4299, store: "Jarir Bookstore", warrantyDaysLeft: 40 },
     { name: "LG refrigerator", nameAr: "ثلاجة إل جي", category: "Appliances", room: "Kitchen", brand: "LG", model: "GR-X257", purchasedDaysAgo: 420, price: 6799, store: "Carrefour City Center", warrantyDaysLeft: 675 },
-    { name: "Split AC units (×4)", nameAr: "مكيفات سبليت (٤)", category: "Appliances", room: "Bedrooms", brand: "Gree", model: "Pular 2T", purchasedDaysAgo: 1050, price: 9600, store: "Jumbo Electronics", warrantyDaysLeft: 25 },
+    { name: "Split AC units (×4)", nameAr: "4 مكيفات سبليت", category: "Appliances", room: "Bedrooms", brand: "Gree", model: "Pular 2T", purchasedDaysAgo: 1050, price: 9600, store: "Jumbo Electronics", warrantyDaysLeft: 25 },
     { name: "Dyson V15 vacuum", nameAr: "مكنسة دايسون V15", category: "Appliances", room: "Storage", brand: "Dyson", model: "V15 Detect", purchasedDaysAgo: 240, price: 2899, store: "Virgin Megastore", warrantyDaysLeft: 490 },
     { name: "Bosch washing machine", nameAr: "غسالة بوش", category: "Appliances", room: "Laundry", brand: "Bosch", model: "Serie 6", purchasedDaysAgo: 830, price: 2450, store: "Lulu Hypermarket", warrantyDaysLeft: -100 },
-    { name: "iPhone 17 Pro (Hessa)", nameAr: "آيفون ١٧ برو (حصة)", category: "Electronics", room: null, brand: "Apple", model: "iPhone 17 Pro", purchasedDaysAgo: 50, price: 4699, store: "Jarir Bookstore", warrantyDaysLeft: 315 },
+    { name: "iPhone 17 Pro (Hessa)", nameAr: "آيفون 17 برو (حصة)", category: "Electronics", room: null, brand: "Apple", model: "iPhone 17 Pro", purchasedDaysAgo: 50, price: 4699, store: "Jarir Bookstore", warrantyDaysLeft: 315 },
     { name: "MacBook Air (Noora)", nameAr: "ماك بوك إير (نورة)", category: "Electronics", room: "Noora's room", brand: "Apple", model: "MacBook Air 13", purchasedDaysAgo: 75, price: 4199, store: "Virgin Megastore", warrantyDaysLeft: 290 },
-    { name: "Sofa set, 7 seats", nameAr: "طقم كنب ٧ مقاعد", category: "Furniture", room: "Majlis", brand: "Home Centre", model: null, purchasedDaysAgo: 1400, price: 7800, store: "Home Centre", warrantyDaysLeft: null },
-    { name: "Nissan Patrol 2023", nameAr: "نيسان باترول ٢٠٢٣", category: "Vehicle", room: null, brand: "Nissan", model: "Patrol LE", purchasedDaysAgo: 980, price: 289000, store: "Saleh Al Hamad Al Mana", warrantyDaysLeft: 115 },
+    { name: "Sofa set, 7 seats", nameAr: "طقم كنب 7 مقاعد", category: "Furniture", room: "Majlis", brand: "Home Centre", model: null, purchasedDaysAgo: 1400, price: 7800, store: "Home Centre", warrantyDaysLeft: null },
+    { name: "Nissan Patrol 2023", nameAr: "نيسان باترول 2023", category: "Vehicle", room: null, brand: "Nissan", model: "Patrol LE", purchasedDaysAgo: 980, price: 289000, store: "Saleh Al Hamad Al Mana", warrantyDaysLeft: 115 },
     { name: "Coffee machine", nameAr: "آلة القهوة", category: "Appliances", room: "Kitchen", brand: "De'Longhi", model: "Dinamica Plus", purchasedDaysAgo: 300, price: 2350, store: "Carrefour City Center", warrantyDaysLeft: 430 },
     { name: "Study desk & bookshelf", nameAr: "مكتب دراسة ومكتبة", category: "Furniture", room: "Ahmed's room", brand: "IKEA", model: "MICKE / BILLY", purchasedDaysAgo: 96, price: 1890, store: "IKEA Doha", warrantyDaysLeft: 3550 },
-    { name: "PlayStation 5", nameAr: "بلايستيشن ٥", category: "Electronics", room: "Family room", brand: "Sony", model: "PS5 Slim", purchasedDaysAgo: 330, price: 1999, store: "Virgin Megastore", warrantyDaysLeft: 35 },
+    { name: "PlayStation 5", nameAr: "بلايستيشن 5", category: "Electronics", room: "Family room", brand: "Sony", model: "PS5 Slim", purchasedDaysAgo: 330, price: 1999, store: "Virgin Megastore", warrantyDaysLeft: 35 },
   ];
   for (const it of items) {
     await db.possession.create({

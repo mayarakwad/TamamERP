@@ -158,8 +158,8 @@ function ShareDialog({ open, onOpenChange, slug, dataset, query, count }: { open
               onChange={setDays}
               options={[
                 { value: 1, label: t("share.oneDay") },
-                { value: 7, label: t("share.sevenDays") },
-                { value: 30, label: t("share.thirtyDays") },
+                { value: 7, label: t("share.sevenDays", { n: fmt.number(7) }) },
+                { value: 30, label: t("share.thirtyDays", { n: fmt.number(30) }) },
                 { value: 0, label: t("share.never") },
               ]}
             />

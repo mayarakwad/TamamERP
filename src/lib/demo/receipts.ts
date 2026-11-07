@@ -85,12 +85,12 @@ export async function renderReceipt(opts: { merchant: string; category: string; 
 
 /** Write a receipt image + thumbnail under STORAGE_DIR and return their relative paths. */
 export async function saveReceiptFiles(orgId: string, id: string, image: Buffer) {
-  const storage = path.resolve(process.env.STORAGE_DIR ?? "./storage");
+  const storage = path.resolve(/*turbopackIgnore: true*/ process.env.STORAGE_DIR ?? "./storage");
   const rel = path.join("orgs", orgId, "attachments");
-  await mkdir(path.join(storage, rel), { recursive: true });
+  await mkdir(path.join(/*turbopackIgnore: true*/ storage, rel), { recursive: true });
   const meta = await sharp(image).metadata();
   const thumb = await sharp(image).resize({ width: 480, height: 480, fit: "inside" }).webp({ quality: 70 }).toBuffer();
-  await writeFile(path.join(storage, rel, `${id}.webp`), image);
-  await writeFile(path.join(storage, rel, `${id}-thumb.webp`), thumb);
+  await writeFile(path.join(/*turbopackIgnore: true*/ storage, rel, `${id}.webp`), image);
+  await writeFile(path.join(/*turbopackIgnore: true*/ storage, rel, `${id}-thumb.webp`), thumb);
   return { path: path.join(rel, `${id}.webp`), thumbPath: path.join(rel, `${id}-thumb.webp`), width: meta.width ?? null, height: meta.height ?? null, size: image.length };
 }

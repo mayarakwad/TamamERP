@@ -79,9 +79,9 @@ export function BillsView({ slug, now, result, bills, categories, openId, canMan
         <EmptyState icon={<CalendarClock className="size-6" />} title={t("bills.emptyTitle")} body={t("bills.emptyBody")} action={canManage && <Button onClick={() => setFormFor("new")}><Plus className="size-4" /> {t("bills.add")}</Button>} />
       ) : (
         <>
-          <h2 className="mb-3 text-sm font-semibold text-muted">{t("bills.upcoming")}</h2>
+          <h2 className="mb-3 text-sm font-semibold text-muted">{t("bills.upcoming", { n: fmt.number(30) })}</h2>
           {upcoming.length === 0 ? (
-            <p className="mb-8 text-sm text-muted">{t("bills.none")}</p>
+            <p className="mb-8 text-sm text-muted">{t("bills.none", { n: fmt.number(30) })}</p>
           ) : (
             <div className="mb-8 grid gap-[var(--gap)] sm:grid-cols-2 xl:grid-cols-3">
               {upcoming.map((b, i) => {

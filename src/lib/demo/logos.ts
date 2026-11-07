@@ -18,7 +18,7 @@ export async function writeDemoLogo(orgId: string, kind: keyof typeof MARKS, col
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256">${MARKS[kind](color)}</svg>`;
   const png = await sharp(Buffer.from(svg)).resize(512, 512).png().toBuffer();
   const rel = path.join("orgs", orgId, "logo.png");
-  const full = path.resolve(process.env.STORAGE_DIR ?? "./storage", rel);
+  const full = path.resolve(/*turbopackIgnore: true*/ process.env.STORAGE_DIR ?? "./storage", rel);
   await mkdir(path.dirname(full), { recursive: true });
   await writeFile(full, png);
   return rel.split(path.sep).join("/");
