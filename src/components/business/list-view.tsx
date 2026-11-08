@@ -35,7 +35,16 @@ export function useQueryParam(query: string) {
     return s ? `${pathname}?${s}` : pathname;
   };
   const set = (key: string, value: string | null) => start(() => router.replace(hrefWith(key, value), { scroll: false }));
-  return { params, hrefWith, set };
+  const setMany = (patch: Record<string, string | null>) => {
+    const next = new URLSearchParams(query);
+    for (const [k, v] of Object.entries(patch)) {
+      if (v) next.set(k, v);
+      else next.delete(k);
+    }
+    const s = next.toString();
+    start(() => router.replace(s ? `${pathname}?${s}` : pathname, { scroll: false }));
+  };
+  return { params, hrefWith, set, setMany };
 }
 
 /**

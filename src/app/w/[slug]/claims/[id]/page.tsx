@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: "Claim" };
 export default async function ClaimPage({ params }: PageProps<"/w/[slug]/claims/[id]">) {
   const { slug, id } = await params;
   const ws = await getWorkspace(slug);
-  if (ws.orgType !== "home" || !(await canViewEntity(ws, "claim", id))) notFound();
+  if (!(await canViewEntity(ws, "claim", id))) notFound();
   await connection();
 
   const [claim, attachments, thread, categories, canEdit] = await Promise.all([

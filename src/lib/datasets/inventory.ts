@@ -72,7 +72,12 @@ export const stockDataset: Dataset<Workspace> = {
   permissions: ["finance.view", "inventory.manage"],
   async load(ws, params, { locale, t }): Promise<DatasetResult> {
     const campuses = ws.org.campuses;
-    const items = await db.item.findMany({ where: { orgId: ws.org.id, kind: "product", archived: false }, orderBy: [{ category: "asc" }, { name: "asc" }], include: { levels: true } });
+    const q = params.get("q")?.trim();
+    const items = await db.item.findMany({
+      where: { orgId: ws.org.id, kind: "product", archived: false, ...(q ? { OR: [{ name: { contains: q } }, { nameAr: { contains: q } }, { sku: { contains: q.toUpperCase() } }] } : {}) },
+      orderBy: [{ category: "asc" }, { name: "asc" }],
+      include: { levels: true },
+    });
     const showCost = ws.can("finance.view");
     return {
       title: t("stock.title"),
@@ -109,8 +114,15 @@ export const stockMovesDataset: Dataset<Workspace> = {
   async load(ws, params, { locale, t }): Promise<DatasetResult> {
     const itemId = params.get("item");
     const campusId = params.get("campus");
+    const q = params.get("q")?.trim();
     const moves = await db.stockMove.findMany({
-      where: { orgId: ws.org.id, ...(itemId ? { itemId } : {}), ...(campusId ? { campusId } : {}), ...(params.get("kind") ? { kind: params.get("kind")! } : {}) },
+      where: {
+        orgId: ws.org.id,
+        ...(itemId ? { itemId } : {}),
+        ...(campusId ? { campusId } : {}),
+        ...(params.get("kind") ? { kind: params.get("kind")! } : {}),
+        ...(q ? { item: { OR: [{ name: { contains: q } }, { nameAr: { contains: q } }, { sku: { contains: q.toUpperCase() } }] } } : {}),
+      },
       orderBy: [{ date: "desc" }, { createdAt: "desc" }],
       include: { item: { select: { sku: true, name: true, nameAr: true } }, campus: { select: { name: true, nameAr: true } } },
       take: 2000,

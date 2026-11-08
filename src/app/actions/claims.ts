@@ -10,6 +10,7 @@ import { parseMoney } from "@/lib/money";
 import { nextNumber } from "@/lib/series";
 import { notify, membersWithRoles } from "@/lib/notify";
 import { indexClaim, removeFromIndex } from "@/lib/search/index-core";
+import { postClaimApproval, postClaimReimbursed, reverseClaim } from "@/lib/claims-ledger";
 
 export type ActionResult<T = object> = ({ ok: true } & T) | { ok: false; error: string; field?: string };
 
@@ -87,6 +88,7 @@ export async function createClaim(slug: string, raw: ClaimInput): Promise<Action
     meta: { amount: claim.amount },
   });
   await indexClaim(db, claim.id);
+  if (auto) await postClaimApproval(db, claim.id, ws.viewer.id);
 
   if (!auto) {
     const approvers = await membersWithRoles(db, ws.org.id, ["owner", "admin"]);
@@ -114,6 +116,11 @@ export async function updateClaim(slug: string, id: string, raw: ClaimInput): Pr
     where: { id },
     data: { amount: d.amount, merchant: d.merchant, categoryId: d.category.id, spentOn: d.spentOn, paidWith: d.paidWith, note: d.note || null },
   });
+  // An approved claim that changes is re-booked at its new amount/category.
+  if (before.status === "approved" && (before.amount !== d.amount || before.categoryId !== d.category.id)) {
+    await reverseClaim(db, id, ws.viewer.id);
+    await postClaimApproval(db, id, ws.viewer.id);
+  }
   const changed = [
     before.amount !== d.amount && `amount ${qar(before.amount)} → ${qar(d.amount)}`,
     before.merchant !== d.merchant && `merchant "${before.merchant}" → "${d.merchant}"`,
@@ -140,6 +147,7 @@ export async function deleteClaim(slug: string, id: string): Promise<ActionResul
   const ws = await getWorkspace(slug);
   if (!(await canEditEntity(ws, "claim", id))) return { ok: false, error: "empty.notAllowed" };
   const c = await db.claim.update({ where: { id }, data: { deletedAt: new Date() } });
+  if (c.status === "approved" || c.status === "reimbursed") await reverseClaim(db, id, ws.viewer.id);
   await removeFromIndex(db, "claim", id);
   await audit({ orgId: ws.org.id, userId: ws.viewer.id, action: "claim.deleted", entityType: "claim", entityId: id, summary: `deleted ${c.number}`, summaryAr: `حذف ${c.number}`, sensitive: true });
   return { ok: true };
@@ -171,6 +179,9 @@ async function decide(slug: string, id: string, decision: Decision, note?: strin
           ? { status, decidedById: null, decidedAt: null, decisionNote: null }
           : { status, decidedById: ws.viewer.id, decidedAt: now, decisionNote: note?.trim() || null },
   });
+
+  if (decision === "approve") await postClaimApproval(db, id, ws.viewer.id, now);
+  if (decision === "reimburse") await postClaimReimbursed(db, id, ws.viewer.id, now);
 
   const words = {
     approve: ["approved", "اعتماد"],

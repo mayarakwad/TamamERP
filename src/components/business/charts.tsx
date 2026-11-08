@@ -8,7 +8,7 @@ import { monthStart } from "@/lib/format";
 import { cn } from "@/lib/cn";
 
 /** Twelve months of amounts as bars; the current month is highlighted. */
-export function MonthBars({ data, height = 180, valueLabel }: { data: { month: string; total: number }[]; height?: number; valueLabel?: string }) {
+export function MonthBars({ data, height = 180, valueLabel, money = true }: { data: { month: string; total: number }[]; height?: number; valueLabel?: string; money?: boolean }) {
   const { fmt, dir } = useI18n();
   const reduced = useReducedMotion();
   const points = data.map((d) => ({ ...d, label: fmt.monthShort(monthStart(d.month)) }));
@@ -18,14 +18,14 @@ export function MonthBars({ data, height = 180, valueLabel }: { data: { month: s
         <BarChart data={points} margin={{ top: 8, right: 4, bottom: 0, left: 4 }}>
           <CartesianGrid vertical={false} stroke="var(--line)" />
           <XAxis dataKey="label" reversed={dir === "rtl"} axisLine={false} tickLine={false} tick={{ fill: "var(--subtle)", fontSize: 11 }} interval={0} />
-          <YAxis orientation={dir === "rtl" ? "right" : "left"} axisLine={false} tickLine={false} width={56} tick={{ fill: "var(--subtle)", fontSize: 11 }} tickFormatter={(v: number) => fmt.money(v, { compact: true })} />
+          <YAxis orientation={dir === "rtl" ? "right" : "left"} axisLine={false} tickLine={false} width={56} tick={{ fill: "var(--subtle)", fontSize: 11 }} tickFormatter={(v: number) => (money ? fmt.money(v, { compact: true }) : fmt.number(v))} />
           <Tooltip
             cursor={{ fill: "var(--sunken)" }}
             content={({ active, payload }) =>
               active && payload?.length ? (
                 <div className="rounded-xl border border-line bg-surface px-3 py-2 text-sm shadow-lift">
                   <p className="text-xs text-muted">{fmt.monthName(monthStart(payload[0].payload.month))}</p>
-                  <p className="tabular font-semibold">{fmt.money(payload[0].payload.total)}</p>
+                  <p className="tabular font-semibold">{money ? fmt.money(payload[0].payload.total) : fmt.number(payload[0].payload.total)}</p>
                   {valueLabel && <p className="text-xs text-muted">{valueLabel}</p>}
                 </div>
               ) : null

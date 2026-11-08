@@ -12,7 +12,6 @@ export const metadata: Metadata = { title: "Claims" };
 export default async function ClaimsPage({ params, searchParams }: PageProps<"/w/[slug]/claims">) {
   const { slug } = await params;
   const ws = await getWorkspace(slug);
-  if (ws.orgType !== "home") notFound();
   const sp = await searchParams;
   const query = new URLSearchParams(Object.entries(sp).flatMap(([k, v]) => (typeof v === "string" ? [[k, v]] : [])));
   const { locale, t } = await getI18n({ currency: ws.org.currency, timeZone: ws.org.timezone });

@@ -6,6 +6,7 @@ import { billsDataset, budgetsDataset, possessionsDataset, summaryDataset } from
 import { activityDataset } from "./activity";
 import { billsDocDataset, customersDataset, invoicesDataset, paymentsInDataset, paymentsOutDataset, purchaseOrdersDataset, quotationsDataset, suppliersDataset } from "./sales";
 import { itemsDataset, stockDataset, stockMovesDataset } from "./inventory";
+import { attendanceDataset, employeesDataset, leaveDataset, payslipsDataset } from "./hr";
 
 // Every exportable table in the app. Add new datasets here.
 const DATASETS: Record<string, Dataset<Workspace>> = {
@@ -26,6 +27,10 @@ const DATASETS: Record<string, Dataset<Workspace>> = {
   items: itemsDataset,
   stock: stockDataset,
   "stock-moves": stockMovesDataset,
+  employees: employeesDataset,
+  attendance: attendanceDataset,
+  leave: leaveDataset,
+  payslips: payslipsDataset,
 };
 
 export function getDataset(id: string): Dataset<Workspace> | undefined {
