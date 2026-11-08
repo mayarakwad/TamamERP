@@ -4,6 +4,7 @@
 import type { Prisma, PrismaClient } from "../../generated/prisma/client";
 import { seedHomeDemo } from "./home";
 import { seedBusinessDemo } from "./business";
+import { seedBusinessPeople } from "./people";
 import { makeIban } from "../payroll/banks";
 import { reindexOrg } from "../search/index-core";
 import { writeDemoLogo } from "./logos";
@@ -107,6 +108,7 @@ export async function seedWorkspaces(db: Db, passwordHash: string, now = new Dat
     ],
   });
   await seedBusinessDemo(db as PrismaClient, biz.id, { khalid: users.khalid, omar: users.omar, priya: users.priya, joseph: users.joseph }, { showroom: showroom.id, warehouse: warehouse.id }, now);
+  await seedBusinessPeople(db as PrismaClient, biz.id, { khalid: users.khalid, omar: users.omar, priya: users.priya, joseph: users.joseph }, { showroom: showroom.id, warehouse: warehouse.id }, now);
 
   // ── School group ── (modules arrive in stage 3)
   const school = await db.organization.create({

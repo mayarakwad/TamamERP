@@ -374,7 +374,7 @@ export function PayrollRun({
               <td className="px-2 py-2.5 text-end tabular">{fmt.money(slips.reduce((s, x) => s + x.allowances, 0))}</td>
               <td className="px-2 py-2.5 text-end tabular">{fmt.money(slips.reduce((s, x) => s + x.overtimePay, 0))}</td>
               <td className="px-2 py-2.5 text-end tabular">{fmt.money(slips.reduce((s, x) => s + x.bonus, 0))}</td>
-              <td className="px-2 py-2.5 text-end tabular">−{fmt.money(run.deductions)}</td>
+              <td className="px-2 py-2.5 text-end tabular">{run.deductions ? `−${fmt.money(run.deductions)}` : "—"}</td>
               <td className="px-2 py-2.5 text-end tabular">{fmt.money(run.net, { decimals: true })}</td>
               <td />
             </tr>

@@ -74,6 +74,9 @@ export const CATALOGUE: ItemSpec[] = [
   { sku: "SRV-PRINTER", name: "Printer maintenance visit", nameAr: "زيارة صيانة طابعات", cat: "service", category: "Services", unit: "visit", sale: 450, cost: 0 },
 ];
 
+// Prices with this year's 8% list increase.
+for (const s of CATALOGUE) if (s.cat !== "service") s.sale = Math.round(s.sale * 1.08 * 4) / 4;
+
 interface PartySpec {
   key: string;
   name: string;
@@ -332,7 +335,7 @@ export async function seedBusinessDemo(
     }
 
     // Customer orders through the month.
-    const orders = Math.round(52 * f * (last ? lastDay / daysInMonth : 1));
+    const orders = Math.round(60 * f * (last ? lastDay / daysInMonth : 1));
     for (let i = 0; i < orders; i++) {
       const day = Math.max(1, Math.min(lastDay, Math.round(((i + 0.5) / orders) * lastDay) + r.int(-1, 1)));
       const date = weekday(dayOf(key, day));
@@ -460,8 +463,9 @@ export async function seedBusinessDemo(
     await flush(dayOf(key, lastDay));
     const cashBal = await db.journalLine.aggregate({ where: { orgId, accountId: cash }, _sum: { debit: true, credit: true } });
     const onHandCash = (cashBal._sum.debit ?? 0) - (cashBal._sum.credit ?? 0);
-    if (!last && onHandCash > q(5000)) {
-      const deposit = Math.floor((onHandCash - q(3000)) / 10000) * 10000;
+    // Keep a float for petty cash and cash-paid wages.
+    if (!last && onHandCash > q(12000)) {
+      const deposit = Math.floor((onHandCash - q(9000)) / 10000) * 10000;
       await postEntry(db, { orgId, date: dayOf(key, Math.min(lastDay, 28)), memo: "Showroom cash deposited at the bank", sourceType: "manual", createdById: people.priya, lines: [{ accountId: bank, debit: deposit }, { accountId: cash, credit: deposit }] });
     }
 
