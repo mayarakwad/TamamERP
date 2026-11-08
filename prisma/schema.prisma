@@ -65,6 +65,7 @@ model User {
   decisions     Claim[]        @relation("ClaimDecider")
   comments      Comment[]
   files         Attachment[]
+  flowChats     FlowConversation[]
 }
 
 model Organization {
@@ -149,6 +150,10 @@ model Organization {
   books          Book[]
   loans          Loan[]
   announcements  Announcement[]
+  flowSettings   FlowSettings?
+  flowChats      FlowConversation[]
+  flowProposals  FlowProposal[]
+  flowUsage      FlowUsage[]
 }
 
 /// A campus (schools) or branch (businesses). Optional for homes.
@@ -1519,4 +1524,118 @@ model Announcement {
   org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
   @@index([orgId, publishedAt])
+}
+
+
+// ───────────────────────── Stage 4: Flow, the AI assistant ─────────────────────────
+
+/// One organization's AI connection. The key is encrypted with APP_SECRET and never leaves the server.
+model FlowSettings {
+  orgId          String    @id
+  org            Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  enabled        Boolean   @default(true)
+  /// anthropic | openai | google | compatible (| scripted, tests only)
+  provider       String    @default("anthropic")
+  model          String    @default("claude-opus-5-5")
+  /// OpenAI-compatible endpoints only
+  baseUrl        String?
+  keyCipher      String?
+  /// e.g. "sk-ant-…a1B2", safe to show
+  keyHint        String?
+  keySetAt       DateTime?
+  keySetById     String?
+  /// low | medium | high (Claude models that support effort)
+  effort         String    @default("medium")
+  /// Prices in micro-dollars per million tokens; null = use the built-in table
+  priceIn        Int?
+  priceOut       Int?
+  /// Monthly spending limit in US cents; null = no limit
+  monthlyLimit   Int?
+  /// Roles allowed to use Flow, comma separated
+  roles          String    @default("owner,admin,accountant,teacher,employee,member,parent")
+  /// Defaults each person can override
+  name           String    @default("Flow")
+  avatar         String    @default("orb")
+  tone           String    @default("friendly")
+  /// Month keys ("2026-11") when the 80% / 100% notices went out
+  warned80       String?
+  warned100      String?
+  updatedAt      DateTime  @updatedAt
+}
+
+/// A chat with Flow. Private to the person who started it.
+model FlowConversation {
+  id          String   @id @default(cuid())
+  orgId       String
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String   @default("")
+  /// Frozen at the start so the provider's prompt cache and thinking blocks stay valid
+  system      String
+  tools       String
+  provider    String
+  model       String
+  turns       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  messages    FlowMessage[]
+  proposals   FlowProposal[]
+
+  @@index([orgId, userId, updatedAt])
+}
+
+/// One step of a conversation: a user turn, an assistant step, or tool results. Append-only.
+model FlowMessage {
+  id             String   @id @default(cuid())
+  conversationId String
+  conversation   FlowConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  /// Order within the conversation
+  seq            Int
+  /// user | assistant | tool
+  role           String
+  content        Json
+  createdAt      DateTime @default(now())
+
+  @@unique([conversationId, seq])
+}
+
+/// A change Flow suggested. Nothing happens until the person confirms it.
+model FlowProposal {
+  id             String   @id @default(cuid())
+  orgId          String
+  org            Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  conversationId String
+  conversation   FlowConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  userId         String
+  toolCallId     String
+  kind           String
+  payload        Json
+  /// pending | done | dismissed | failed
+  status         String   @default("pending")
+  result         Json?
+  createdAt      DateTime @default(now())
+  decidedAt      DateTime?
+
+  @@index([conversationId])
+}
+
+/// One call to the AI provider, for usage and spending.
+model FlowUsage {
+  id              String   @id @default(cuid())
+  orgId           String
+  org             Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  userId          String
+  conversationId  String?
+  provider        String
+  model           String
+  inputTokens     Int
+  outputTokens    Int
+  cacheReadTokens Int      @default(0)
+  cacheWriteTokens Int     @default(0)
+  /// micro-dollars; null when the model's price isn't known
+  costMicros      Int?
+  createdAt       DateTime @default(now())
+
+  @@index([orgId, createdAt])
 }

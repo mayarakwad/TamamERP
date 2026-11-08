@@ -135,7 +135,11 @@ export interface BackupData {
   organization: Record<string, unknown>;
   users: Record<string, unknown>[];
   tables: Record<string, Record<string, unknown>[]>;
+  /** Flow's settings without the AI key (it can't be decrypted elsewhere anyway). Chats and usage are private and stay out. */
+  flow?: Record<string, unknown> | null;
 }
+
+const FLOW_FIELDS = ["enabled", "provider", "model", "baseUrl", "effort", "priceIn", "priceOut", "monthlyLimit", "roles", "name", "avatar", "tone"] as const;
 
 export interface Manifest {
   format: string;
@@ -173,7 +177,9 @@ export async function exportWorkspace(orgId: string, includeFiles: boolean) {
   } else {
     tables.attachment = [];
   }
-  return { data: { organization, users, tables } satisfies BackupData, files };
+  const flowRow = await db.flowSettings.findUnique({ where: { orgId } });
+  const flow = flowRow ? Object.fromEntries(FLOW_FIELDS.map((k) => [k, flowRow[k]])) : null;
+  return { data: { organization, users, tables, flow } satisfies BackupData, files };
 }
 
 function deriveKey(password: string, salt: Buffer) {
@@ -373,6 +379,12 @@ export async function importWorkspace(data: BackupData, files: Record<string, Ui
           if (ok) out.push(row);
         }
         if (out.length) await delegate(tx, t.model).createMany({ data: out });
+      }
+
+      // Flow's settings come back; the key stays with the workspace it was saved in.
+      if (data.flow) {
+        const flow = Object.fromEntries(FLOW_FIELDS.filter((k) => k in data.flow!).map((k) => [k, data.flow![k]]));
+        await tx.flowSettings.upsert({ where: { orgId }, create: { orgId, ...flow }, update: flow });
       }
 
       // The person restoring or duplicating always ends up as an owner.

@@ -130,7 +130,7 @@ export const NAV: NavItem[] = [
 export const READY = new Set([
   "home-dashboard", "biz-dashboard", "school-dashboard", "appearance", "profile", "claims", "budgets", "bills", "things", "summary", "workspace", "members", "activity", "data",
   "customers", "quotations", "invoices", "payments-in", "suppliers", "purchase-orders", "purchase-bills", "payments-out", "items", "stock", "expenses", "reports", "accounts", "journals", "employees", "attendance", "leave", "payroll", "payslips",
-  "students", "guardians", "staff", "staff-attendance", "school-setup", "admissions", "classes", "student-attendance", "exams", "fees", "transport", "library", "announcements", "my-children", "campuses",
+  "students", "guardians", "staff", "staff-attendance", "school-setup", "admissions", "classes", "student-attendance", "exams", "fees", "transport", "library", "announcements", "my-children", "campuses", "flow",
 ]);
 
 const GROUP_ORDER: MessageKey[] = [

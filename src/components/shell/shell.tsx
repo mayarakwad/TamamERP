@@ -2,14 +2,17 @@
 
 import { useState, useSyncExternalStore } from "react";
 import { Dialog, Direction } from "radix-ui";
-import { Menu, PanelLeftClose, PanelLeftOpen, Search, Sparkles, X, FlaskConical } from "lucide-react";
+import { Menu, PanelLeftClose, PanelLeftOpen, Search, X, FlaskConical } from "lucide-react";
 import { useI18n, WorkspaceFormat } from "@/components/providers";
 import { QuickToggles } from "@/components/appearance/quick-toggles";
 import { LiveWallpaper } from "@/components/appearance/live-wallpaper";
 import { Sidebar, SidebarNav } from "./sidebar";
 import { UserMenu } from "./user-menu";
 import { CommandPalette } from "./command-palette";
-import { FlowSheet } from "./flow-sheet";
+import { FlowPanel } from "@/components/flow/flow-panel";
+import { FlowProvider, useFlow } from "@/components/flow/flow-provider";
+import { FlowAvatar } from "@/components/flow/avatar";
+import { flowDisplayName } from "@/lib/flow/models";
 import { NotificationBell } from "./notification-bell";
 import { WorkspaceSwitcher } from "./workspace-switcher";
 import { CampusSwitcher } from "./campus-switcher";
@@ -41,10 +44,34 @@ function subscribeCollapsed(onChange: () => void) {
 }
 
 export function Shell({ data, children }: { data: ShellData; children: React.ReactNode }) {
+  return (
+    <FlowProvider slug={data.slug} available={data.flow.state === "ok"}>
+      <ShellInner data={data}>{children}</ShellInner>
+    </FlowProvider>
+  );
+}
+
+function FlowButton({ data }: { data: ShellData }) {
+  const { t, locale } = useI18n();
+  const flow = useFlow();
+  const name = flowDisplayName(data.flow.personal.name || data.flow.defaults.name, locale);
+  return (
+    <button
+      type="button"
+      onClick={() => flow?.open()}
+      title={`${t("flow.open")} (${t("flow.shortcut")})`}
+      className="inline-flex h-9 items-center gap-2 rounded-xl bg-accent-soft ps-1 pe-3 text-sm font-medium text-accent transition hover:brightness-95 dark:hover:brightness-110"
+    >
+      <FlowAvatar avatar={data.flow.personal.avatar ?? data.flow.defaults.avatar} busy={flow?.status !== "idle"} className="size-7 rounded-lg" />
+      <span className="hidden md:inline">{name}</span>
+    </button>
+  );
+}
+
+function ShellInner({ data, children }: { data: ShellData; children: React.ReactNode }) {
   const { t, dir } = useI18n();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
-  const [flowOpen, setFlowOpen] = useState(false);
 
   // Collapsed sidebar is a per-device convenience, so it lives in localStorage.
   const collapsed = useSyncExternalStore(subscribeCollapsed, readCollapsed, () => false);
@@ -102,14 +129,7 @@ export function Shell({ data, children }: { data: ShellData; children: React.Rea
               {data.campus && <CampusSwitcher slug={data.slug} campus={data.campus} />}
               <QuickToggles className="hidden sm:flex" />
               <NotificationBell slug={data.slug} />
-              <button
-                type="button"
-                onClick={() => setFlowOpen(true)}
-                className="inline-flex h-9 items-center gap-2 rounded-xl bg-accent-soft px-3 text-sm font-medium text-accent transition hover:brightness-95 dark:hover:brightness-110"
-              >
-                <Sparkles className="size-4" />
-                <span className="hidden md:inline">{t("shell.openFlow")}</span>
-              </button>
+              <FlowButton data={data} />
               <UserMenu data={data} />
             </div>
           </header>
@@ -143,7 +163,7 @@ export function Shell({ data, children }: { data: ShellData; children: React.Rea
       </Dialog.Root>
 
       <CommandPalette data={data} open={paletteOpen} onOpenChange={setPaletteOpen} />
-      <FlowSheet open={flowOpen} onOpenChange={setFlowOpen} />
+      <FlowPanel slug={data.slug} timeZone={data.timezone} flow={data.flow} orgType={data.orgType} role={data.role} extras={data.extras} firstName={(dir === "rtl" && data.viewer.nameAr ? data.viewer.nameAr : data.viewer.name).replace(/^(Dr\.?|د\.)\s*/, "").split(" ")[0]} />
       </WorkspaceFormat>
     </Direction.Provider>
   );

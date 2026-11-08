@@ -216,3 +216,26 @@ body {
 [data-motion="reduced"] [role="dialog"] {
   animation-name: fade-in !important;
 }
+
+/* Flow: the avatar breathes while Flow works; "Thinking…" shimmers. */
+@keyframes flow-breathe {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--accent) 45%, transparent); }
+  50% { box-shadow: 0 0 0 6px color-mix(in oklch, var(--accent) 0%, transparent); }
+}
+.flow-busy { animation: flow-breathe 1.6s ease-in-out infinite; }
+.flow-shimmer {
+  background: linear-gradient(90deg, var(--muted) 0%, var(--fg) 50%, var(--muted) 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 1.8s linear infinite;
+}
+[data-motion="reduced"] .flow-busy,
+[data-motion="reduced"] .flow-shimmer { animation: none; }
+[data-motion="reduced"] .flow-shimmer { color: var(--muted); background: none; }
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion="full"]) .flow-busy,
+  :root:not([data-motion="full"]) .flow-shimmer { animation: none; }
+  :root:not([data-motion="full"]) .flow-shimmer { color: var(--muted); background: none; }
+}

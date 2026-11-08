@@ -20,6 +20,7 @@
     "reset:fresh": "tsx scripts/reset-fresh.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.6.0",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
@@ -38,11 +39,14 @@
     "lucide-react": "^1.70.0",
     "motion": "^14.10.1",
     "next": "16.4.5",
+    "openai": "^7.53.0",
     "playwright-core": "^1.63.0",
     "radix-ui": "^1.8.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
+    "react-markdown": "^10.1.0",
     "recharts": "^3.10.1",
+    "remark-gfm": "^4.0.1",
     "server-only": "^0.0.1",
     "sharp": "^0.35.5",
     "sonner": "^2.0.8",

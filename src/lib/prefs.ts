@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { THEME_IDS } from "./themes";
+import { FLOW_AVATARS, FLOW_TONES } from "./flow/models";
 
 // Personal preferences, saved on the user record so they follow the person to
 // any device. Every field has a safe fallback, so old or partial data never
@@ -39,6 +40,10 @@ export const prefsSchema = z.object({
   digits: z.enum(["latn", "arab"]).catch("latn"),
   showHijri: z.boolean().catch(true),
   motion: z.enum(["system", "full", "reduced"]).catch("system"),
+  // Flow, personally: null = the workspace's default
+  flowName: z.string().trim().min(1).max(24).nullable().catch(null),
+  flowAvatar: z.enum(FLOW_AVATARS).nullable().catch(null),
+  flowTone: z.enum(FLOW_TONES).nullable().catch(null),
 });
 
 export type Prefs = z.infer<typeof prefsSchema>;

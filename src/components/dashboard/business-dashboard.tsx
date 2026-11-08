@@ -1,5 +1,6 @@
 "use client";
 
+import { AskFlow } from "@/components/flow/ask-flow";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { AlertTriangle, BadgeDollarSign, CalendarCheck, Clock, FileClock, HandCoins, IdCard, Inbox, Package, PartyPopper, Plane, Receipt, Sparkles, TrendingDown, TrendingUp, Trophy, Wallet } from "lucide-react";
@@ -57,7 +58,7 @@ export function BusinessDashboard({ slug, data, now, greeting, firstName, layout
       span: "half",
       node: (
         <Card glass className="h-full">
-          <CardHeader title={t("dashboard.briefing")} icon={<Sparkles className="size-4" />} />
+          <CardHeader title={t("dashboard.briefing")} icon={<Sparkles className="size-4" />} action={<AskFlow prompt="flow.s_attention" />} />
           <CardBody className="space-y-2">
             {data.brief.map((b, i) => {
               const Icon = BRIEF_ICON[b.kind];

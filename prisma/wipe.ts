@@ -7,6 +7,11 @@ export async function wipeAll(db: PrismaClient) {
   const path = await import("node:path");
   rmSync(path.resolve(process.env.STORAGE_DIR ?? "./storage", "orgs"), { recursive: true, force: true });
   await db.systemSetting.deleteMany();
+  await db.flowUsage.deleteMany();
+  await db.flowProposal.deleteMany();
+  await db.flowMessage.deleteMany();
+  await db.flowConversation.deleteMany();
+  await db.flowSettings.deleteMany();
   await db.auditLog.deleteMany();
   await db.notification.deleteMany();
   await db.comment.deleteMany();

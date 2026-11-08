@@ -1,6 +1,7 @@
 import type { Messages } from "./en";
 import { arBiz } from "./ar-biz";
 import { arSchool } from "./ar-school";
+import { arFlow } from "./ar-flow";
 
 // الرسائل العربية. يجب أن تطابق بنية en.ts (يتحقق TypeScript من ذلك).
 
@@ -911,4 +912,5 @@ export const ar: Messages = {
   },
   ...arBiz,
   ...arSchool,
+  ...arFlow,
 };

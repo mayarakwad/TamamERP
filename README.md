@@ -20,6 +20,9 @@
 | ![A bilingual report card](docs/screenshots/report-card.jpg) | ![The parent view](docs/screenshots/parent-view.jpg) |
 | ![School fees](docs/screenshots/school-fees.jpg) | ![Bus routes](docs/screenshots/transport.jpg) |
 | ![Online application form](docs/screenshots/apply-form.jpg) | ![The parent view on a phone](docs/screenshots/mobile-parent.jpg) |
+| ![Flow answering from the school's data](docs/screenshots/flow-answer.jpg) | ![A change Flow prepared, waiting for Confirm](docs/screenshots/flow-proposal.jpg) |
+| ![Flow filling in an open claim form](docs/screenshots/flow-fill.jpg) | ![Flow in Arabic](docs/screenshots/flow-ar.jpg) |
+| ![Settings → Flow: provider, key, model, spending](docs/screenshots/flow-settings.jpg) | ![Flow before a key is connected](docs/screenshots/flow-not-connected.jpg) |
 
 ## Install
 
@@ -87,6 +90,8 @@ After `npm run setup:demo`, open <http://localhost:3000> and click any account u
 
 `npm run db:seed` resets the demo at any time, with dates relative to today so it always looks current.
 
+**Flow in the demo** needs an AI key, so it starts out "not connected". It explains how to turn it on rather than breaking. To try it, sign in as an owner (e.g. `fatima@tamam.demo`), open **Settings → Flow**, choose a provider, paste a key, and press **Test connection**. During development you can instead start the server with `FLOW_SCRIPTED=1` and pick the scripted test provider; the screenshots of the panel were taken that way, so their answers are the test provider's plain wording over real demo data.
+
 ### Scripts
 
 | Command | What it does |
@@ -98,7 +103,7 @@ After `npm run setup:demo`, open <http://localhost:3000> and click any account u
 | `npm run reset:fresh` | Wipe everything and return to the setup wizard (asks first) |
 | `npm run db:seed` | Reset the demo data |
 | `npm run db:migrate` | Create a migration after editing `prisma/schema.prisma` |
-| `npm test` | Unit tests: formatting, money, permissions, preferences, setup key, CSV and filename safety, document maths, amounts in words (English and Arabic), IBANs, payroll and the WPS file |
+| `npm test` | Unit tests: formatting, money, permissions, preferences, setup key, CSV and filename safety, document maths, amounts in words (English and Arabic), IBANs, payroll and the WPS file, school maths, and Flow (key encryption, costs, conversation replay, Word export) |
 | `npm run test:e2e` | Browser tests: setup wizard, sign-in, roles, Arabic, signup, lockout, claims, exports, share links, search, notifications, invitations, backups; and for businesses: invoicing and payments, quote to invoice, receiving and billing, storekeeper access, payroll and WPS, leave, balanced statements, backup of a business. On a new machine, run `npx playwright install chromium` first |
 | `npm run lint` | ESLint |
 | `npm run typecheck` | TypeScript check |
@@ -113,6 +118,7 @@ After `npm run setup:demo`, open <http://localhost:3000> and click any account u
 | `CHROMIUM_PATH` | Optional. The Chrome or Chromium used to make PDFs. If unset, the one from `npx playwright install chromium` is used. Without either, PDF downloads say so politely and everything else still works. |
 | `SHOW_DEMO_LOGINS=0` | Hides the demo accounts on the sign-in page even when demo data is installed. They're already hidden on servers set up without the demo. |
 | `INSECURE_COOKIES=1` | Only for testing a production build over plain HTTP on a LAN address. Never set it on the internet. |
+| `FLOW_SCRIPTED=1` | Development and automated tests only. Adds a "Test provider (scripted, no AI)" to Settings → Flow: a stand-in that picks Flow's tools with simple rules and writes plain answers from their results, so everything except the AI itself can be tried without a key. Never set it on a real server. |
 
 ## What's built
 
@@ -136,7 +142,7 @@ After `npm run setup:demo`, open <http://localhost:3000> and click any account u
 - **The shell.**
   - The sidebar adapts to the workspace type and your role.
   - A workspace switcher, and a ⌘K command palette for pages, workspaces and preferences.
-  - The Flow panel (it explains what's coming in stage 4).
+  - The Flow panel (the AI assistant, built in stage 4).
   - A mobile drawer.
 - **A living Home dashboard.**
   - a morning briefing
@@ -258,6 +264,50 @@ After `npm run setup:demo`, open <http://localhost:3000> and click any account u
 
 **How it was checked:** the end-to-end tests take a roll, type and paste marks, apply online and enrol the child, record a payment, open a parent's report card, check the Lusail lock, check the timetable refuses a clash, and restore a backup with its books balanced. The report card and class PDFs, the Arabic fee invoice PDF (with the amount in Arabic words), the Arabic student list in Excel and the fees list in Word were downloaded and opened.
 
+### Stage 4 · Flow, the AI assistant
+
+**Every workspace has Flow, in a side panel you can open from anywhere**: the button in the top bar, Ctrl/⌘ J, "Ask Flow" in the search palette (type a question and pick it), the briefing card on each dashboard, or the ✦ button in any form panel. The chat stays open as you move between pages, and a reload brings it back. Past chats are kept for each person and are private to them.
+
+**What it does**
+- **Answers questions about the organization's own data**, e.g. "How much did we spend on groceries in October?" or "Which students missed more than three days this week?". It reads with tools that run as the person asking, so it never sees more than they could:
+  - **Any table or report in the app** (claims, invoices, customers, stock, employees, leave, students, fees, P&L, balance sheet, aging...), the same definitions the pages and downloads use, with their filters, sorting and totals.
+  - **Search** across every record, and **opening one record** in detail (a student with attendance, results and fees; an invoice with its lines; a customer with what they owe...).
+  - **Spending by category, person, merchant or month**, and **student absences** for any period (office: their campus; teacher: their classes; parent: their own children).
+  - **Today's briefing**: what needs attention, what's waiting, the key numbers.
+- **Explains the page you're on.** With "This page" on (the default), your question carries what's on screen, so "explain these numbers" works on a report and "which of these are overdue?" on a list.
+- **Drafts emails, notices, letters and reports**, ready to send. Each answer has **Copy** (pastes formatted into email or Word) and **Download as Word** (headings, lists and tables, right-to-left when it's Arabic).
+- **Helps fill in forms.** With a form panel open, press ✦ and ask (e.g. "85 riyals at Lulu"). Flow suggests values and **Fill in** types them into the form; you check it and save it yourself.
+- **Changes need your click.** Creating or changing anything is a **proposal card** showing exactly what will happen, with **Confirm** and **Dismiss**. Confirming runs the app's own action (same checks, postings, notifications and activity log as doing it by hand) and is logged as confirmed from Flow. Flow can prepare: an expense claim, approving or declining a claim, a household bill, a budget, something the family owns, a draft quotation/invoice/purchase order/supplier bill, a payment received or made, a leave request, approving or declining leave, a school announcement, a school fee payment, fee reminders, and a comment on any record. Approving a claim or recording a fee payment gets the same small celebration as in the app.
+- **Knows the app**: which pages this person can open, how each module works, how to do things ("How do I run payroll?"), in English or Arabic, whichever you write in.
+
+**Each organization brings its own AI key (Settings → Flow, owners and admins)**
+- **Providers**: Claude (Anthropic, through Anthropic's official SDK), OpenAI, Google Gemini, or any other OpenAI-compatible service (OpenRouter, Mistral, a local Ollama...) by endpoint URL.
+- **The key is stored encrypted** with AES-256-GCM, using a key derived from `APP_SECRET` and the workspace's id. It's decrypted only on the server, right before a call, and never sent to any browser: the page only ever shows a hint like `sk-ant-…a1B2`. Copied into another workspace or server it can't be decrypted. Saving or removing a key is logged as a sensitive action.
+- **Model and thinking**: Claude models are listed with their prices (Claude Opus 5.5 is the default); "Thinking" sets how hard Claude thinks (quick, balanced, thorough). For other providers, "Load models" lists what the key can use. **Test connection** checks the key without spending anything.
+- **Usage and spending limit**: this month's cost in dollars (what providers bill in) with the riyal equivalent, cost per day, a per-person table (downloadable like every table), cost by model and the last six months. Costs come from the token counts the provider reports, times the model's prices: built in for Claude; for other providers you enter them from the provider's pricing page. Set a **monthly limit**: Flow pauses for everyone when it's reached, and owners and admins are notified at 80% and 100%.
+- **Who can use it**: choose which roles get Flow (e.g. leave parents out to control costs). Owners always can.
+- **Personality**: rename Flow, pick its look (eight drawn marks) and its tone (friendly, concise, formal, playful). That's the workspace default; **each person can choose their own** from the panel's menu.
+- **No key yet?** Flow doesn't break: it explains how to turn it on. Owners and admins get a button to the settings page, and others are told who to ask. The same happens when it's turned off, not allowed for a role, or over the limit.
+- **Privacy, spelled out on the settings page**: what is sent to the provider (the question, the page if "This page" is on, the records Flow looks up), that conversations are private (admins see usage, never content), and that changes always need a click.
+
+**How it's built to be safe and cheap**
+- Every tool input is checked against its schema before anything runs; record contents and pages are treated as information, never as instructions.
+- A conversation's system prompt and tool list are frozen when it starts and the history is only ever appended to, so Claude's prompt cache stays warm and its earlier reasoning stays valid. The time, the page and anything confirmed since the last message go into each new message instead.
+- Requests stream, so the answer appears as it's written, with each tool step shown as it happens. There's a per-person rate limit, chats are capped at 40 questions (start a new one), and big tool results are trimmed.
+- Backups keep Flow's settings but not the key, the chats or the usage.
+
+**How it was checked:**
+- Unit tests: key encryption (round trip, other workspace, tampering, changed secret, hints), cost maths, the exact replay of a conversation to Claude and to OpenAI-style providers, the page context, and the Word export.
+- End-to-end tests with the scripted test provider: the "not connected" states, saving a key that never appears in the page, answering from the school's data with a table and a Word download, a proposal that changes nothing until **Publish**, a parent who can't find other people's children, filling an open claim form, usage tracking and the spending limit pausing Flow.
+- The real Anthropic, OpenAI and Google endpoints were called with made-up keys and answered "key refused", so the server reaches them and reports that properly. There was no real AI key in this environment, so a full conversation with a real model hasn't been run yet (see the limitations below).
+
+**Known limitations**
+- No real AI key was available while building, so a full conversation with a real model hasn't been run yet. The Claude, OpenAI and Gemini connections were checked only as far as "key refused". The first real conversation is the thing to try.
+- Spending is worked out from token counts and the model's prices, so it can differ slightly from the provider's invoice. For providers other than Claude, prices must be entered by hand.
+- Flow reads text only: it doesn't see receipt photos or uploaded files yet.
+- Form filling works with ordinary fields (text, numbers, dates, dropdowns, checkboxes). Picker buttons like the claim's category tiles are left for the person, or Flow prepares the whole claim as a proposal instead.
+- OpenAI-compatible providers use the Chat Completions API. Thinking level is a Claude setting; other models use their provider's default.
+
 ## Roadmap
 
 | Stage | Contents |
@@ -266,7 +316,7 @@ After `npm run setup:demo`, open <http://localhost:3000> and click any account u
 | ~~1b · Home~~ | Done |
 | ~~2 · Business~~ | Done |
 | ~~3 · School~~ | Done |
-| **4 · Flow** | The AI assistant, using each organization's own key (encrypted on the server), with provider and model choice, usage tracking and a spending limit. It reads freely and proposes changes you confirm with one click. |
+| ~~4 · Flow~~ | Done |
 
 ## How it's put together
 
@@ -299,6 +349,9 @@ src/lib/inventory/          Stock movements, moving-average cost, low-stock aler
 src/lib/hr/, payroll/       Working days, leave balances, payslip maths, payroll runs, IBANs, the WPS file
 src/lib/words.ts            Amounts in words, English and Arabic
 src/app/w/[slug]/_biz/      Shared server pages for the business modules
+src/lib/flow/               Flow: key encryption, providers (Anthropic SDK, OpenAI-compatible), tools, proposals, prompt, the chat loop
+src/components/flow/        The Flow panel, proposal cards, form filling, avatars
+src/app/api/w/[slug]/flow/  Flow's streaming chat endpoint and Word download
 src/lib/school/             School settings, grading, fee maths, timetable solver, campus scope, rollover, report cards
 src/app/apply/[slug]/       The public online application form
 src/lib/backup/             Backup file format, restore with id remapping, duplicate
@@ -356,3 +409,10 @@ Tamam needs a normal Node server, for example Docker on a VPS. It doesn't suit s
 - **A public online application form** with spam protection and a reference number.
 - **A "new school year" preview** before anything changes, with classmates kept together, full classes overflowing into the emptier one, and transfers when a campus stops at a grade.
 - **A believable demo school**: 735 students across three campuses, 105 staff, real Qatari family structures with siblings, a term of attendance and marks, last year's report cards, two fee runs with some families behind, a full bus, about 44 applications at every stage, and the Al-Mansouri children so the same family runs through the home and school demos.
+- **Flow fills in the form you have open**: press ✦ in a form panel and ask; values go into the form for you to check and save.
+- **Answers download as Word and copy with formatting**, so a drafted notice or report goes straight into an email or document.
+- **Ask Flow from anywhere**: Ctrl/⌘ J, the search palette, the dashboard briefing and every form. The chat survives moving between pages and reloading, and past chats are kept per person.
+- **Per-role access and per-person usage**, to keep AI costs under control, plus notices at 80% and 100% of the monthly limit.
+- **Test connection checks a key without spending anything**, by listing the provider's models.
+- **A personal Flow**: each person can rename it and choose its look and tone, on top of the workspace's default.
+- **A scripted test provider** (`FLOW_SCRIPTED=1`, development only), so the whole assistant can be tested automatically without a key.

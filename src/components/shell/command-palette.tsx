@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { Command } from "cmdk";
 import { Dialog } from "radix-ui";
 import { Armchair, BookOpen, Building2, CalendarDays, ClipboardList, Contact, FileText, GraduationCap, Languages, Moon, Package, Palette, Receipt, Search, Sun, User, Users } from "lucide-react";
+import { useFlow } from "@/components/flow/flow-provider";
+import { FlowAvatar } from "@/components/flow/avatar";
+import { flowDisplayName } from "@/lib/flow/models";
 import { useI18n, usePrefs } from "@/components/providers";
 import { navFor } from "@/lib/modules";
 import { THEMES } from "@/lib/themes";
@@ -44,6 +47,7 @@ export function CommandPalette({ data, open, onOpenChange }: { data: ShellData; 
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onOpenChange]);
 
+  const flow = useFlow();
   const run = (fn: () => void) => {
     onOpenChange(false);
     fn();
@@ -69,6 +73,16 @@ export function CommandPalette({ data, open, onOpenChange }: { data: ShellData; 
             </div>
             <Command.List className="overflow-y-auto p-2">
               <Command.Empty className="px-3 py-8 text-center text-sm text-muted">{t("palette.empty")}</Command.Empty>
+              {flow?.available && query.trim().length > 2 && (
+                <Command.Group heading={flowDisplayName(data.flow.personal.name || data.flow.defaults.name, locale)}>
+                  <Command.Item value={`ask flow ${query}`} keywords={[query]} onSelect={() => run(() => flow.open(query.trim()))} className={itemClass}>
+                    <FlowAvatar avatar={data.flow.personal.avatar ?? data.flow.defaults.avatar} className="size-5 rounded-md" />
+                    <span className="min-w-0 truncate">
+                      {t("flow.open")}: “{query.trim()}”
+                    </span>
+                  </Command.Item>
+                </Command.Group>
+              )}
               {visibleHits.length > 0 && (
                 <Command.Group heading={t("palette.records")}>
                   {visibleHits.map((h) => {

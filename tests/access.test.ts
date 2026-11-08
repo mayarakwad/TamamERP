@@ -13,9 +13,11 @@ describe("roles see only what belongs to them", () => {
     expect(ids("home", "member")).not.toContain("summary");
     expect(ids("home", "member")).not.toContain("members");
   });
-  it("only owners configure Flow and download backups", () => {
+  it("owners and admins configure Flow; only owners download backups", () => {
     expect(can("owner", "flow.configure")).toBe(true);
-    expect(can("admin", "flow.configure")).toBe(false);
+    expect(can("admin", "flow.configure")).toBe(true);
+    expect(can("accountant", "flow.configure")).toBe(false);
+    expect(can("parent", "flow.configure")).toBe(false);
     expect(can("admin", "workspace.backup")).toBe(false);
     expect(can("accountant", "workspace.backup")).toBe(false);
   });

@@ -54,6 +54,7 @@ const GRANTS: Record<Role, Permission[] | "*"> = {
     "workspace.manage",
     "members.manage",
     "audit.view",
+    "flow.configure",
     "claims.submit",
     "claims.viewAll",
     "claims.approve",

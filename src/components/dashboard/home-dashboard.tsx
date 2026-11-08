@@ -1,5 +1,6 @@
 "use client";
 
+import { AskFlow } from "@/components/flow/ask-flow";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -132,7 +133,7 @@ function Briefing({ data, now, canApprove, base }: { data: HomeDashboardData; no
 
   return (
     <Card glass className="h-full overflow-hidden">
-      <CardHeader title={t("dashboard.briefing")} icon={<Sparkles className="size-4" />} />
+      <CardHeader title={t("dashboard.briefing")} icon={<Sparkles className="size-4" />} action={<AskFlow prompt="flow.s_attention" />} />
       <CardBody>
         {items.length === 0 ? (
           <p className="flex items-center gap-2 text-sm text-muted">

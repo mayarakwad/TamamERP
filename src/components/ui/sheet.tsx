@@ -1,7 +1,8 @@
 "use client";
 
 import { Dialog } from "radix-ui";
-import { X } from "lucide-react";
+import { Sparkles, X } from "lucide-react";
+import { useFlow } from "@/components/flow/flow-provider";
 import { useI18n } from "@/components/providers";
 import { cn } from "@/lib/cn";
 
@@ -24,6 +25,7 @@ export function Sheet({
   wide?: boolean;
 }) {
   const { t, dir } = useI18n();
+  const flow = useFlow();
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
@@ -41,9 +43,16 @@ export function Sheet({
               <Dialog.Title className="text-lg font-semibold">{title}</Dialog.Title>
               {description ? <Dialog.Description className="mt-0.5 text-sm text-muted">{description}</Dialog.Description> : <Dialog.Description className="sr-only">{title}</Dialog.Description>}
             </div>
-            <Dialog.Close className="grid size-8 shrink-0 place-items-center rounded-lg text-muted hover:bg-sunken" aria-label={t("common.close")}>
-              <X className="size-4" />
-            </Dialog.Close>
+            <div className="flex shrink-0 items-center gap-1">
+              {flow?.available && (
+                <button type="button" onClick={() => flow.open()} className="grid size-8 place-items-center rounded-lg text-accent hover:bg-accent-soft" aria-label={t("flow.askAboutForm")} title={t("flow.askAboutForm")}>
+                  <Sparkles className="size-4" />
+                </button>
+              )}
+              <Dialog.Close className="grid size-8 shrink-0 place-items-center rounded-lg text-muted hover:bg-sunken" aria-label={t("common.close")}>
+                <X className="size-4" />
+              </Dialog.Close>
+            </div>
           </div>
           <div className="flex-1 overflow-y-auto px-6 py-5">{children}</div>
           {footer && <div className="flex items-center justify-end gap-2 border-t border-line px-6 py-4">{footer}</div>}

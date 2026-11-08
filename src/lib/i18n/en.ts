@@ -3,6 +3,7 @@
 
 import { enBiz } from "./en-biz";
 import { enSchool } from "./en-school";
+import { enFlow } from "./en-flow";
 
 export const en = {
   app: {
@@ -911,9 +912,11 @@ export const en = {
   },
   ...enBiz,
   ...enSchool,
+  ...enFlow,
 } as const;
 
 type Widen<T> = T extends string ? string : { [K in keyof T]: Widen<T[K]> };
 export type Messages = Widen<typeof en>;
 export type BizMessages = Widen<typeof enBiz>;
 export type SchoolMessages = Widen<typeof enSchool>;
+export type FlowMessages = Widen<typeof enFlow>;

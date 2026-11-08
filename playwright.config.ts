@@ -13,6 +13,8 @@ export default defineConfig({
     command: "npm run db:seed && npx next dev -p 3200",
     url: "http://localhost:3200/login",
     reuseExistingServer: !process.env.CI,
+    // Flow's scripted test provider: the whole assistant pipeline runs, without an AI key.
+    env: { FLOW_SCRIPTED: "1" },
     timeout: 300_000,
   },
 });
