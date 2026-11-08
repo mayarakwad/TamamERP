@@ -2,6 +2,7 @@
 // Arabic file must provide the same shape (TypeScript enforces it).
 
 import { enBiz } from "./en-biz";
+import { enSchool } from "./en-school";
 
 export const en = {
   app: {
@@ -32,6 +33,8 @@ export const en = {
     delete: "Delete",
     all: "All",
     new: "New",
+    copy: "Copy",
+    copied: "Copied",
   },
   orgTypes: {
     business: "Business",
@@ -137,6 +140,8 @@ export const en = {
     library: "Library",
     announcements: "Announcements",
     myChildren: "My children",
+    staffAttendance: "Staff attendance",
+    schoolSetup: "School setup",
     settings: "Settings",
     appearance: "Appearance",
     profile: "Profile",
@@ -190,6 +195,8 @@ export const en = {
     library: "Books, loans and overdue reminders.",
     announcements: "Circulars to staff and parents.",
     myChildren: "Attendance, grades, fees and the bus, for each of your children.",
+    staffAttendance: "Check-in and check-out for teachers and staff.",
+    schoolSetup: "Academic year, subjects, the school day, grading and fee rules.",
     workspace: "Name, logo, colours, address and the details printed on documents.",
     members: "Invite people and choose what each role can see.",
     activity: "Who changed what and when, including sign-ins and exports.",
@@ -903,8 +910,10 @@ export const en = {
     tooShort: "Too short",
   },
   ...enBiz,
+  ...enSchool,
 } as const;
 
 type Widen<T> = T extends string ? string : { [K in keyof T]: Widen<T[K]> };
 export type Messages = Widen<typeof en>;
 export type BizMessages = Widen<typeof enBiz>;
+export type SchoolMessages = Widen<typeof enSchool>;

@@ -41,6 +41,8 @@ import {
   Scale,
   Armchair,
   NotebookPen,
+  CalendarClock,
+  SlidersHorizontal,
   type LucideIcon,
 } from "lucide-react";
 import type { MessageKey } from "./i18n";
@@ -87,14 +89,14 @@ export const NAV: NavItem[] = [
   { id: "items", path: "inventory/items", label: "nav.items", desc: "modules.items", icon: Package, group: "nav.groupInventory", types: ["business"], perms: ["finance.view", "inventory.manage"], stage: "2" },
   { id: "stock", path: "inventory/stock", label: "nav.stock", desc: "modules.stock", icon: Warehouse, group: "nav.groupInventory", types: ["business"], perms: ["finance.view", "inventory.manage"], stage: "2" },
   { id: "expenses", path: "claims", label: "nav.expenses", desc: "modules.expenses", icon: Wallet, group: "nav.groupFinance", types: ["business", "school"], perms: ["claims.submit"], stage: "2" },
-  { id: "reports", path: "reports", label: "nav.reports", desc: "modules.reports", icon: BarChart3, group: "nav.groupFinance", types: ["business"], perms: ["finance.view"], stage: "2" },
-  { id: "accounts", path: "finance/accounts", label: "nav.accounts", desc: "modules.accounts", icon: BookText, group: "nav.groupFinance", types: ["business"], perms: ["finance.view"], stage: "2" },
-  { id: "journals", path: "finance/journals", label: "nav.journals", desc: "modules.journals", icon: Scale, group: "nav.groupFinance", types: ["business"], perms: ["finance.view"], stage: "2" },
+  { id: "reports", path: "reports", label: "nav.reports", desc: "modules.reports", icon: BarChart3, group: "nav.groupFinance", types: ["business", "school"], perms: ["finance.view"], stage: "2" },
+  { id: "accounts", path: "finance/accounts", label: "nav.accounts", desc: "modules.accounts", icon: BookText, group: "nav.groupFinance", types: ["business", "school"], perms: ["finance.view"], stage: "2" },
+  { id: "journals", path: "finance/journals", label: "nav.journals", desc: "modules.journals", icon: Scale, group: "nav.groupFinance", types: ["business", "school"], perms: ["finance.view"], stage: "2" },
   { id: "employees", path: "hr/employees", label: "nav.employees", desc: "modules.employees", icon: Users, group: "nav.groupPeople", types: ["business"], perms: ["hr.view"], stage: "2" },
   { id: "attendance", path: "hr/attendance", label: "nav.attendance", desc: "modules.attendance", icon: CalendarCheck, group: "nav.groupPeople", types: ["business"], stage: "2" },
   { id: "leave", path: "hr/leave", label: "nav.leave", desc: "modules.leave", icon: CalendarRange, group: "nav.groupPeople", types: ["business", "school"], perms: ["claims.submit", "hr.view"], stage: "2" },
   { id: "payroll", path: "hr/payroll", label: "nav.payroll", desc: "modules.payroll", icon: BadgeDollarSign, group: "nav.groupPeople", types: ["business", "school"], perms: ["payroll.run", "hr.manage"], stage: "2" },
-  { id: "payslips", path: "hr/payslips", label: "nav.payslips", desc: "modules.payslips", icon: FileText, group: "nav.groupPeople", types: ["business"], roles: ["employee", "accountant", "admin"], stage: "2" },
+  { id: "payslips", path: "hr/payslips", label: "nav.payslips", desc: "modules.payslips", icon: FileText, group: "nav.groupPeople", types: ["business", "school"], roles: ["employee", "accountant", "admin", "teacher"], stage: "2" },
 
   // ── School ──
   { id: "school-dashboard", path: "", label: "nav.dashboard", icon: LayoutDashboard, group: "nav.groupMain", types: ["school"], stage: "1a" },
@@ -102,15 +104,16 @@ export const NAV: NavItem[] = [
   { id: "my-children", path: "children", label: "nav.myChildren", desc: "modules.myChildren", icon: UserRoundCheck, group: "nav.groupMain", types: ["school"], roles: ["parent"], stage: "3" },
   { id: "announcements", path: "announcements", label: "nav.announcements", desc: "modules.announcements", icon: Megaphone, group: "nav.groupMain", types: ["school"], stage: "3" },
   { id: "admissions", path: "admissions", label: "nav.admissions", desc: "modules.admissions", icon: ClipboardList, group: "nav.groupAcademics", types: ["school"], perms: ["school.manage"], stage: "3" },
-  { id: "students", path: "students", label: "nav.students", desc: "modules.students", icon: GraduationCap, group: "nav.groupAcademics", types: ["school"], perms: ["school.manage", "school.teach"], stage: "3" },
-  { id: "guardians", path: "guardians", label: "nav.guardians", desc: "modules.guardians", icon: Contact, group: "nav.groupAcademics", types: ["school"], perms: ["school.manage"], stage: "3" },
+  { id: "students", path: "students", label: "nav.students", desc: "modules.students", icon: GraduationCap, group: "nav.groupAcademics", types: ["school"], perms: ["school.manage", "school.teach", "finance.view"], stage: "3" },
+  { id: "guardians", path: "guardians", label: "nav.guardians", desc: "modules.guardians", icon: Contact, group: "nav.groupAcademics", types: ["school"], perms: ["school.manage", "finance.view"], stage: "3" },
   { id: "classes", path: "classes", label: "nav.classes", desc: "modules.classes", icon: School, group: "nav.groupAcademics", types: ["school"], perms: ["school.manage", "school.teach"], stage: "3" },
   { id: "student-attendance", path: "attendance", label: "nav.studentAttendance", desc: "modules.studentAttendance", icon: CalendarCheck, group: "nav.groupAcademics", types: ["school"], perms: ["school.manage", "school.teach"], stage: "3" },
   { id: "exams", path: "exams", label: "nav.exams", desc: "modules.exams", icon: FileSpreadsheet, group: "nav.groupAcademics", types: ["school"], perms: ["school.manage", "school.teach"], stage: "3" },
-  { id: "transport", path: "transport", label: "nav.transport", desc: "modules.transport", icon: Bus, group: "nav.groupCampus", types: ["school"], perms: ["school.manage"], stage: "3" },
-  { id: "library", path: "library", label: "nav.library", desc: "modules.library", icon: BookOpen, group: "nav.groupCampus", types: ["school"], perms: ["school.manage", "school.teach"], stage: "3" },
+  { id: "transport", path: "transport", label: "nav.transport", desc: "modules.transport", icon: Bus, group: "nav.groupCampus", types: ["school"], perms: ["school.manage", "transport.manage"], stage: "3" },
+  { id: "library", path: "library", label: "nav.library", desc: "modules.library", icon: BookOpen, group: "nav.groupCampus", types: ["school"], perms: ["school.manage", "school.teach", "library.manage"], stage: "3" },
   { id: "fees", path: "fees", label: "nav.fees", desc: "modules.fees", icon: Receipt, group: "nav.groupFinance", types: ["school"], perms: ["finance.view", "school.manage"], stage: "3" },
-  { id: "staff", path: "staff", label: "nav.staff", desc: "modules.staff", icon: Users, group: "nav.groupPeople", types: ["school"], perms: ["hr.view", "school.manage"], stage: "3" },
+  { id: "staff", path: "hr/employees", label: "nav.staff", desc: "modules.staff", icon: Users, group: "nav.groupPeople", types: ["school"], perms: ["hr.view"], stage: "3" },
+  { id: "staff-attendance", path: "hr/attendance", label: "nav.staffAttendance", desc: "modules.staffAttendance", icon: CalendarClock, group: "nav.groupPeople", types: ["school"], perms: ["hr.view", "school.teach", "claims.submit"], stage: "3" },
 
   // ── Settings (every workspace) ──
   { id: "appearance", path: "settings/appearance", label: "nav.appearance", icon: Palette, group: "nav.groupSettings", types: ALL, stage: "1a" },
@@ -119,6 +122,7 @@ export const NAV: NavItem[] = [
   { id: "members", path: "settings/members", label: "nav.members", desc: "modules.members", icon: ShieldCheck, group: "nav.groupSettings", types: ALL, perms: ["members.manage"], stage: "1b" },
   { id: "activity", path: "settings/activity", label: "nav.activity", desc: "modules.activity", icon: History, group: "nav.groupSettings", types: ALL, perms: ["audit.view"], stage: "1b" },
   { id: "data", path: "settings/data", label: "nav.data", desc: "modules.data", icon: DatabaseBackup, group: "nav.groupSettings", types: ALL, perms: ["workspace.backup"], stage: "1b" },
+  { id: "school-setup", path: "settings/school", label: "nav.schoolSetup", desc: "modules.schoolSetup", icon: SlidersHorizontal, group: "nav.groupSettings", types: ["school"], perms: ["school.manage"], stage: "3" },
   { id: "flow", path: "settings/flow", label: "nav.flow", desc: "modules.flow", icon: Sparkles, group: "nav.groupSettings", types: ALL, perms: ["flow.configure"], stage: "4" },
 ];
 
@@ -126,6 +130,7 @@ export const NAV: NavItem[] = [
 export const READY = new Set([
   "home-dashboard", "biz-dashboard", "school-dashboard", "appearance", "profile", "claims", "budgets", "bills", "things", "summary", "workspace", "members", "activity", "data",
   "customers", "quotations", "invoices", "payments-in", "suppliers", "purchase-orders", "purchase-bills", "payments-out", "items", "stock", "expenses", "reports", "accounts", "journals", "employees", "attendance", "leave", "payroll", "payslips",
+  "students", "guardians", "staff", "staff-attendance", "school-setup", "admissions", "classes", "student-attendance", "exams", "fees", "transport", "library", "announcements", "my-children", "campuses",
 ]);
 
 const GROUP_ORDER: MessageKey[] = [

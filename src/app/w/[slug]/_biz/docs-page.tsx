@@ -6,7 +6,7 @@ import type { DocKind } from "@/lib/docs/ops";
 import { DocsView } from "@/components/business/docs-view";
 
 /** Quotations, invoices, purchase orders or supplier bills. */
-export async function DocsPage({ slug, kind, sp }: { slug: string; kind: DocKind; sp: Record<string, string | string[] | undefined> }) {
+export async function DocsPage({ slug, kind, sp }: { slug: string; kind: Exclude<DocKind, "fee">; sp: Record<string, string | string[] | undefined> }) {
   const ws = await bizPage(slug, kind === "po" ? ["finance.view", "inventory.manage"] : ["finance.view"]);
   const query = toQuery(sp);
   const { locale, t } = await i18nFor(ws);

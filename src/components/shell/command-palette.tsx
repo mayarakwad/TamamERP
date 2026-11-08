@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Command } from "cmdk";
 import { Dialog } from "radix-ui";
-import { Armchair, CalendarDays, Languages, Moon, Palette, Receipt, Search, Sun, User } from "lucide-react";
+import { Armchair, BookOpen, Building2, CalendarDays, ClipboardList, Contact, FileText, GraduationCap, Languages, Moon, Package, Palette, Receipt, Search, Sun, User, Users } from "lucide-react";
 import { useI18n, usePrefs } from "@/components/providers";
 import { navFor } from "@/lib/modules";
 import { THEMES } from "@/lib/themes";
@@ -30,7 +30,8 @@ export function CommandPalette({ data, open, onOpenChange }: { data: ShellData; 
     return () => clearTimeout(id);
   }, [query, data.slug]);
   const visibleHits = query.trim().length >= 2 ? hits : [];
-  const hitIcon = (type: string) => (type === "claim" ? Receipt : type === "bill" ? CalendarDays : type === "possession" ? Armchair : User);
+  const HIT_ICON: Record<string, typeof User> = { claim: Receipt, bill: CalendarDays, possession: Armchair, party: Building2, item: Package, document: FileText, employee: Users, student: GraduationCap, guardian: Contact, application: ClipboardList, book: BookOpen };
+  const hitIcon = (type: string) => HIT_ICON[type] ?? User;
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

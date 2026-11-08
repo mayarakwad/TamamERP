@@ -22,6 +22,8 @@ export interface Column {
   width?: number;
   /** Hide on small screens. */
   hideOnMobile?: boolean;
+  /** Only in downloads and print (too detailed for the screen) */
+  exportOnly?: boolean;
 }
 
 export interface Row {

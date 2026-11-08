@@ -96,6 +96,10 @@ async function join(inv: NonNullable<Awaited<ReturnType<typeof findInvite>>["inv
   const m = await db.membership.create({ data: { orgId: inv.orgId, userId, role: inv.role, title: inv.title } });
   await db.invitation.update({ where: { id: inv.id }, data: { acceptedAt: new Date() } });
   await db.user.update({ where: { id: userId }, data: { lastOrgId: inv.orgId } });
+  // Schools: a parent invited by email sees the children of every guardian
+  // record with that email; staff are linked to their employee record.
+  if (inv.role === "parent") await db.guardian.updateMany({ where: { orgId: inv.orgId, email: inv.email, userId: null }, data: { userId } });
+  if (["teacher", "employee", "accountant", "admin"].includes(inv.role)) await db.employee.updateMany({ where: { orgId: inv.orgId, email: inv.email, userId: null }, data: { userId } });
   await indexMember(db, m.id);
   await audit({ orgId: inv.orgId, userId, action: "member.joined", summary: `joined as ${inv.role} (invited)`, summaryAr: "الانضمام عبر دعوة", sensitive: true });
   await notify(db, { orgId: inv.orgId, userIds: await membersWithRoles(db, inv.orgId, ["owner", "admin"]), except: userId, kind: "member.joined", title: `${name} joined the workspace`, titleAr: `انضمام ${name} إلى مساحة العمل` });

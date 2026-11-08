@@ -12,6 +12,7 @@ import { CommandPalette } from "./command-palette";
 import { FlowSheet } from "./flow-sheet";
 import { NotificationBell } from "./notification-bell";
 import { WorkspaceSwitcher } from "./workspace-switcher";
+import { CampusSwitcher } from "./campus-switcher";
 import type { ShellData } from "./types";
 
 const COLLAPSE_KEY = "tamam.sidebarCollapsed";
@@ -98,6 +99,7 @@ export function Shell({ data, children }: { data: ShellData; children: React.Rea
             </button>
 
             <div className="ms-auto flex items-center gap-1.5">
+              {data.campus && <CampusSwitcher slug={data.slug} campus={data.campus} />}
               <QuickToggles className="hidden sm:flex" />
               <NotificationBell slug={data.slug} />
               <button

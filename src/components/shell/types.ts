@@ -11,6 +11,8 @@ export interface ShellData {
   /** URL of the organization's logo, if one was uploaded */
   logoUrl: string | null;
   campusCount: number;
+  /** Schools with more than one campus: which one is showing */
+  campus?: { options: { id: string; name: string; nameAr: string | null; color: string | null }[]; selected: string | null; locked: boolean };
   role: Role;
   extras: Permission[];
   title: string | null;

@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Chart of accounts" };
 
 export default async function AccountsPage({ params, searchParams }: PageProps<"/w/[slug]/finance/accounts">) {
   const { slug } = await params;
-  const ws = await bizPage(slug, ["finance.view"]);
+  const ws = await bizPage(slug, ["finance.view"], ["business", "school"]);
   const query = toQuery(await searchParams);
   const { locale, t } = await i18nFor(ws);
   const [result, accounts] = await Promise.all([accountsDataset.load(ws, query, { locale, t }), db.account.findMany({ where: { orgId: ws.org.id }, orderBy: { code: "asc" } })]);

@@ -1,5 +1,6 @@
 import type { Messages } from "./en";
 import { arBiz } from "./ar-biz";
+import { arSchool } from "./ar-school";
 
 // الرسائل العربية. يجب أن تطابق بنية en.ts (يتحقق TypeScript من ذلك).
 
@@ -32,6 +33,8 @@ export const ar: Messages = {
     delete: "حذف",
     all: "الكل",
     new: "جديد",
+    copy: "نسخ",
+    copied: "تم النسخ",
   },
   orgTypes: {
     business: "شركة",
@@ -133,6 +136,8 @@ export const ar: Messages = {
     library: "المكتبة",
     announcements: "التعاميم",
     myChildren: "أبنائي",
+    staffAttendance: "حضور الموظفين",
+    schoolSetup: "إعداد المدرسة",
     settings: "الإعدادات",
     appearance: "المظهر",
     profile: "الملف الشخصي",
@@ -190,6 +195,8 @@ export const ar: Messages = {
     library: "الكتب والإعارات وتذكيرات التأخير.",
     announcements: "تعاميم للكادر وأولياء الأمور.",
     myChildren: "الحضور والدرجات والرسوم والحافلة لكل ابن من أبنائك.",
+    staffAttendance: "تسجيل حضور وانصراف المعلمين والموظفين.",
+    schoolSetup: "العام الدراسي والمواد واليوم الدراسي وقواعد التقييم والرسوم.",
     workspace: "الاسم والشعار والألوان والعنوان والبيانات المطبوعة على المستندات.",
     members: "ادعُ الأشخاص واختر ما يراه كل دور.",
     activity: "من غيّر ماذا ومتى، بما في ذلك تسجيلات الدخول والتصدير.",
@@ -903,4 +910,5 @@ export const ar: Messages = {
     tooShort: "قصير جداً",
   },
   ...arBiz,
+  ...arSchool,
 };

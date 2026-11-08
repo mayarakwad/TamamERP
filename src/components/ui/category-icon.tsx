@@ -4,6 +4,7 @@ import {
   Fuel,
   Gift,
   Landmark,
+  PartyPopper,
   Paperclip,
   Plane,
   HeartPulse,
@@ -33,6 +34,7 @@ const ICONS: Record<string, LucideIcon> = {
   plane: Plane,
   paperclip: Paperclip,
   landmark: Landmark,
+  party: PartyPopper,
 };
 
 export function CategoryIcon({ icon, className }: { icon: string; className?: string }) {

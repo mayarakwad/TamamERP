@@ -10,9 +10,12 @@ import { ReportsIndex } from "@/components/business/reports";
 
 export const metadata: Metadata = { title: "Reports" };
 
+/** Trading reports that mean nothing to a school. */
+const SCHOOL_HIDDEN = ["sales-by-customer", "sales-by-item", "stock-valuation"];
+
 export default async function ReportsPage({ params }: PageProps<"/w/[slug]/reports">) {
   const { slug } = await params;
-  const ws = await bizPage(slug, ["finance.view"]);
+  const ws = await bizPage(slug, ["finance.view"], ["business", "school"]);
   await connection();
   const { t, locale } = await i18nFor(ws);
   const p = periodOf(ws, new URLSearchParams());
@@ -31,6 +34,7 @@ export default async function ReportsPage({ params }: PageProps<"/w/[slug]/repor
   return (
     <ReportsIndex
       slug={slug}
+      hide={ws.orgType === "school" ? SCHOOL_HIDDEN : []}
       headlines={{
         pl: { value: pl.netProfit, hint: t("reports.hintNet", { income: (pl.totalIncome / 100).toLocaleString("en", { maximumFractionDigits: 0 }) }) },
         bs: { value: bs.totalAssets, hint: t("reports.hintAssets") },

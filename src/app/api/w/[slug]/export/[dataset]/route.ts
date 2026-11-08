@@ -14,6 +14,8 @@ import { htmlToPdf, PdfUnavailable } from "@/lib/export/pdf";
 import { renderClaimVoucher } from "@/lib/export/voucher";
 import { renderBusinessDocument, renderStatement } from "@/lib/export/document";
 import { renderPayslip } from "@/lib/export/payslip";
+import { renderReportCards } from "@/lib/export/report-card";
+import { canViewStudent } from "@/lib/access";
 import { bizSettings } from "@/lib/biz";
 import { db } from "@/lib/db";
 
@@ -72,6 +74,39 @@ export async function GET(request: Request, { params }: RouteContext<"/api/w/[sl
 
   let doc: ExportDoc;
   let body: Buffer | string;
+
+  // Report cards: one (parents of the child, their teachers, the office) or a whole class (homeroom teacher, office).
+  if (dataset === "report-card" || dataset === "report-cards") {
+    let ids: string[] = [];
+    if (dataset === "report-card") {
+      const rc = await db.reportCard.findFirst({ where: { id: query.get("id") ?? "", orgId: ws.org.id } });
+      const staff = ws.can("school.manage") || ws.can("school.teach");
+      if (!rc || !(await canViewStudent(ws, rc.studentId)) || (rc.status !== "published" && !staff)) return new Response("Not found", { status: 404 });
+      ids = [rc.id];
+    } else {
+      const sectionId = query.get("section") ?? "";
+      const termId = query.get("term") ?? "";
+      const sec = await db.section.findFirst({ where: { id: sectionId, orgId: ws.org.id } });
+      const emp = await db.employee.findFirst({ where: { orgId: ws.org.id, userId: ws.viewer.id }, select: { id: true } });
+      if (!sec || !(ws.can("school.manage") || (emp && sec.homeroomId === emp.id))) return new Response("Not found", { status: 404 });
+      const students = await db.student.findMany({ where: { sectionId, status: "active" }, orderBy: { name: "asc" }, select: { id: true } });
+      for (const st of students) {
+        const rc = await db.reportCard.upsert({ where: { studentId_termId: { studentId: st.id, termId } }, create: { orgId: ws.org.id, studentId: st.id, termId, sectionId }, update: {} });
+        ids.push(rc.id);
+      }
+    }
+    doc = makeDoc({ ...common, title: "", columns: [], rows: [] });
+    const html = await renderReportCards(doc, ws.org.id, ids, format === "pdf" ? "pdf" : "print");
+    await audit({ orgId: ws.org.id, userId: ws.viewer.id, action: format === "pdf" ? "export.downloaded" : "export.printed", entityType: "dataset", entityId: dataset, summary: `${format === "pdf" ? "downloaded" : "printed"} ${ids.length} report card${ids.length === 1 ? "" : "s"}`, summaryAr: `${format === "pdf" ? "تنزيل" : "طباعة"} ${ids.length} شهادة`, sensitive: true });
+    if (format !== "pdf") return new Response(html, { headers: { "Content-Type": TYPES.print, "Cache-Control": "no-store" } });
+    try {
+      body = await htmlToPdf(html, { landscape: false, footerLeft: `${appName} · ${brand.name}`, dir: "ltr", locale: "en" });
+    } catch (e) {
+      if (e instanceof PdfUnavailable) return new Response("PDF export needs Chromium on the server (npx playwright install chromium). Use Print instead.", { status: 503 });
+      throw e;
+    }
+    return new Response(new Uint8Array(body), { headers: { "Content-Type": TYPES.pdf, "Content-Disposition": `attachment; filename="report-card${ids.length > 1 ? "s" : ""}.pdf"`, "Cache-Control": "no-store" } });
+  }
 
   // Single records: claim vouchers, business documents, statements, payslips.
   if (["claim", "document", "statement", "payslip"].includes(dataset)) {

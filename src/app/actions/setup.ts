@@ -15,6 +15,7 @@ import { isInstalled, normalizeSetupKey, removeSetupKeyFile, setupKeyMatches } f
 import { STORAGE_DIR } from "@/lib/storage";
 import { createHomeDefaults } from "@/lib/demo/home";
 import { ensureBusinessDefaults } from "@/lib/ledger/chart";
+import { ensureSchoolDefaults } from "@/lib/school/defaults";
 import { DEMO_PASSWORD, DEMO_PEOPLE, seedWorkspaces } from "@/lib/demo/workspaces";
 import { writePrefsCookie } from "./prefs";
 import { SETUP_CURRENCIES } from "@/lib/system/options";
@@ -195,6 +196,7 @@ export async function install(formData: FormData): Promise<InstallResult> {
         for (const [i, name] of (names.length ? names : ["Main campus"]).entries()) {
           await tx.campus.create({ data: { orgId: org.id, name, code: `C${i + 1}` } });
         }
+        await ensureSchoolDefaults(tx, org.id);
       } else if (workspace.type === "business") {
         await tx.campus.create({ data: { orgId: org.id, name: "Main branch", nameAr: "الفرع الرئيسي", code: "MAIN" } });
         await ensureBusinessDefaults(tx, org.id);

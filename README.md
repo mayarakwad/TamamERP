@@ -13,6 +13,13 @@
 | ![Business dashboard](docs/screenshots/biz-dashboard.jpg) | ![Business dashboard in Arabic](docs/screenshots/biz-dashboard-ar.jpg) |
 | ![An invoice](docs/screenshots/invoice.jpg) | ![An invoice in Arabic](docs/screenshots/invoice-ar.jpg) |
 | ![Payroll with WPS check](docs/screenshots/payroll-run.jpg) | ![Profit and loss](docs/screenshots/profit-and-loss.jpg) |
+| ![School dashboard](docs/screenshots/school-dashboard.jpg) | ![School dashboard in Arabic](docs/screenshots/school-dashboard-ar.jpg) |
+| ![Three campuses side by side](docs/screenshots/campuses.jpg) | ![Admissions board](docs/screenshots/admissions.jpg) |
+| ![Timetable builder](docs/screenshots/timetable.jpg) | ![Roll call](docs/screenshots/roll-call.jpg) |
+| ![Gradebook](docs/screenshots/gradebook.jpg) | ![Report cards in Arabic](docs/screenshots/report-cards-ar.jpg) |
+| ![A bilingual report card](docs/screenshots/report-card.jpg) | ![The parent view](docs/screenshots/parent-view.jpg) |
+| ![School fees](docs/screenshots/school-fees.jpg) | ![Bus routes](docs/screenshots/transport.jpg) |
+| ![Online application form](docs/screenshots/apply-form.jpg) | ![The parent view on a phone](docs/screenshots/mobile-parent.jpg) |
 
 ## Install
 
@@ -65,14 +72,18 @@ After `npm run setup:demo`, open <http://localhost:3000> and click any account u
 
 | Person | Workspace | Role | What to look at |
 |---|---|---|---|
-| Hessa Al-Mansouri | Al-Mansouri Home | Owner | The Home dashboard: 5 claims waiting (approve one), a busy grocery week, dining over budget, bills due this week, a TV warranty ending soon. Every page under **Settings**. She's also a **parent** at Al Manara (try the workspace switcher). |
+| Hessa Al-Mansouri | Al-Mansouri Home + Al Manara | Owner / Parent | The Home dashboard: 5 claims waiting (approve one), a busy grocery week, dining over budget, bills due this week, a TV warranty ending soon. Every page under **Settings**. At Al Manara she's a **parent**: Ahmed (7-A) and Mariam (3-B), their attendance, marks, fees and report cards, and nothing else. |
 | Maria Santos | Al-Mansouri Home | Family member | The family-member view: new claim from a phone, her own claims and their comment threads, no admin pages. Search only finds her own claims. |
 | Khalid Al-Mansouri | Sadeem (business) + Home | Owner / Admin | One login, two workspaces. At Sadeem: the business dashboard, a year of sales, purchases and payroll, every report. |
 | Priya Nair | Sadeem | Accountant | Invoices, payments, supplier bills, journals and reports. She prepares payroll; an admin approves it. |
 | Omar Haddad | Sadeem | Admin | Approves leave, expense claims and payroll. Sign in with `omar@tamam.demo`. |
 | Joseph Mathew | Sadeem | Employee + stock access | The storekeeper: checks in from his phone, receives deliveries, counts stock, sees no sales or prices. Sign in with `joseph@tamam.demo`. |
-| Dr. Fatima Al-Sulaiti | Al Manara International School | Owner | The school group with three campuses. |
-| Aisha Rahman | Al Manara | Teacher | Teachers only see their own classes' pages. |
+| Dr. Fatima Al-Sulaiti | Al Manara International School | Owner (group director) | Three campuses (Al Waab, Lusail, Al Wakra) and 735 students. The morning briefing (5-B's roll not taken, Bus 4 full, overdue fees, new applications), **Campuses** side by side, the campus switcher in the top bar, admissions, timetables, fees, and **Settings → School → New school year**. |
+| Sarah Mitchell | Al Manara | Admin, Lusail only | A principal tied to one campus: every list, count, export and search shows Lusail only. Sign in with `sarah@tamam.demo`. |
+| Rami Khoury | Al Manara | Accountant | Fees: the term 2 run, overdue families, recording a payment (watch for the celebration), reminders, the fee structure, and the school's books. Sign in with `rami@tamam.demo`. |
+| Aisha Rahman | Al Manara | Teacher | Grade 5-B's homeroom teacher and the science teacher for Grade 5. Her dashboard shows her day; take 5-B's roll, finish the science mid-term marks (type or paste from Excel), and write report card comments. She only sees her own classes. |
+| Khalid Al-Mansouri | Al Manara | Parent | The same family seen by the other parent. |
+| Yousef Al-Emadi | Al Manara | Employee + transport access | The transport coordinator: bus routes, stops and riders, without the rest of the office. Sign in with `yousef@tamam.demo`. |
 
 `npm run db:seed` resets the demo at any time, with dates relative to today so it always looks current.
 
@@ -202,6 +213,51 @@ After `npm run setup:demo`, open <http://localhost:3000> and click any account u
 
 **How the exports were checked:** each format was downloaded and opened, not just generated. Excel files were read back cell by cell (direction, number types, formats, formulas). Excel and Word files were opened in LibreOffice and rendered to images to check Arabic letter shaping, right-to-left order and page numbers. PDFs and the print layout were checked the same way in Chromium.
 
+### Stage 3 · School
+
+**Admissions and records**
+- **Admissions board**: applications move through Applied → Assessment → Offered → Enrolled (or Declined / Withdrawn), by dragging a card or with buttons. Each one has the child, the guardians, documents, notes and a comment thread. **Enrol** creates the student, links or creates the guardians, puts the child in a class and bills the registration fee.
+- **Online application form** at `/apply/<school>`: a public, bilingual page families fill in from a phone. It gives a reference number (`APP-2026-00042`) and lands on the board. It is rate-limited and has a hidden honeypot field to stop spam bots. It can be closed in the school settings.
+- **Students** with admission number, QID, nationality, date of birth, campus, class, guardians, bus stop, medical notes and discounts. Each student page shows attendance this term, results by subject compared with the class average, published report cards, fees and a staff-only notes thread. You can move a student to another class or campus, withdraw them or mark them graduated.
+- **Guardians** (one record can be the parent of several children, which drives the sibling discount). **Invite to the parent app** sends a login. When they accept, their account is linked to their children automatically.
+- **Staff** use the business HR module (employees, documents, attendance, leave and payroll). Teachers are employees with teaching assignments.
+
+**Classes, timetables and attendance**
+- **Classes** (5-A, KG1-B, 5-ب in Arabic) per campus with a homeroom teacher, a room, capacity, and a teacher for each subject.
+- **Timetable builder**: a week grid. Click a period to place a subject; any choice that would put a teacher in two rooms at once is greyed out with the reason ("Mr Haddad is teaching 6-B"). **Fill automatically** completes the week: core subjects in the morning, at most two periods of a subject a day, and no teacher clashes across the whole school. It places all 1,720 periods in the demo. Timetables download as Excel.
+- **Roll call** built for a phone: everyone starts present, one tap marks absent, two marks late, three marks excused. Save shows "Roll saved · 2 absent", and parents of absent children get a notification. The dashboard flags classes whose roll isn't taken by 08:30.
+
+**Exams, gradebook and report cards**
+- **Assessments** per class and subject (quizzes, homework, projects, mid-terms, finals) with a maximum score and a weight. **Schedule an exam** creates it for every class in a grade at once.
+- **Gradebook**: a spreadsheet-like grid. Arrow keys and Enter move between cells. It accepts Arabic digits (١٨) and commas (17,5), "a" or «غ» for absent, and **paste a block straight from Excel**. Changes save on their own. Each column shows its average, median, min and max. Term percentages are weighted, and an assessment a child missed is left out rather than counted as zero (a school setting).
+- **Report cards**: per-subject percentage and letter (A–F on a scale you set), attendance, a homeroom comment and a principal's comment. Comment suggestions match the result, in English and in Arabic with the right gender for the child. **Publish** freezes a copy and notifies parents. Each card prints as one bilingual A4 page (English and Arabic together), as do whole classes as one PDF.
+
+**Fees**
+- A **fee structure** per grade: tuition, books and registration, with transport per bus route. It splits into installments (40 / 30 / 30 by default, due 15 Aug, 1 Dec, 1 Mar) in whole riyals that add back up.
+- **Discounts** applied automatically: sibling (5% for the second child, 10% third, 15% after), a staff discount (50%), or a scholarship. The child gets the larger one, not both.
+- **Billing an installment** issues one invoice per child for a campus or the whole school, addressed to the guardian. Each invoice posts to the school's own income accounts (tuition, transport, books, registration) in the same double-entry ledger as stage 2.
+- **Recording a payment** finds the family, shows every open invoice for all their children, and applies the amount oldest first. When a family's fees are paid in full there's a small celebration. Also: overdue lists with one-click reminders, voiding, printable fee invoices and family statements, and the receivables, P&L and other reports.
+
+**Transport, library, announcements**
+- **Bus routes** with driver, supervisor, capacity, stops in order with pick-up times, and riders. The dashboard warns when a bus is full ("Bus 4 is full · 26 of 26"). Rider lists download for the driver.
+- **Library**: books with ISBN, copies and shelf location, loans to students or staff with a due date (14 days by default), overdue reminders and returns.
+- **Announcements** for everyone, staff only or parents only, to the whole school, one campus or one grade, pinned or not.
+
+**The parent view**
+- A parent signs in and sees **only their own children**: whether they're at school today, the next lesson and the week's timetable, attendance and results this term, published report cards to print, fees due and overdue with a statement, the bus with pick-up and drop-off times, library books, and on the dashboard the announcements meant for them. Arabic or English, on a phone or a computer. Staff pages and other children aren't shown at all.
+
+**Several campuses, one account**
+- The **campus switcher** in the top bar filters every page, count and export to one campus, or shows them all. Someone tied to one campus (like the Lusail principal) is locked to it everywhere, including search and downloads.
+- **Campuses side by side**: students and how full each campus is, present today, fees collected and overdue, term average, staff, classes, buses and applications, plus attendance by campus over the last four weeks.
+- **The school dashboard**: a morning briefing (rolls not taken, a full bus, overdue fees, new applications, birthdays, expiring staff documents, marks or comments due), key numbers, attendance over the last weeks, students per grade and campus, and what's waiting for you. A teacher sees their day instead (today's periods, rolls to take, marks to enter); a parent sees their children.
+
+**New school year**
+- **Settings → School → New school year** previews and then runs the rollover: every child moves up a grade and keeps their classmates; if a class is full the rest go to the emptier one. Leavers graduate, and children whose campus stops at their grade move to one that continues. Applicants accepted for next year join their class. It creates the new year and terms, copies classes, teaching assignments and (if you choose) timetables, and can raise fees by a percentage. **Duplicate workspace** (stage 1a) is still there for a full sandbox copy.
+
+**Data, search, backups.** Students, guardians, applications, timetables, fee invoices and payments, bus riders, books and loans all download as Excel, CSV, Word and PDF and can be shared like every other table. Search finds students (only those a teacher teaches), guardians, applications and books, in Arabic or English. Backups and restores include every school table, and a restored school's books still balance.
+
+**How it was checked:** the end-to-end tests take a roll, type and paste marks, apply online and enrol the child, record a payment, open a parent's report card, check the Lusail lock, check the timetable refuses a clash, and restore a backup with its books balanced. The report card and class PDFs, the Arabic fee invoice PDF (with the amount in Arabic words), the Arabic student list in Excel and the fees list in Word were downloaded and opened.
+
 ## Roadmap
 
 | Stage | Contents |
@@ -209,7 +265,7 @@ After `npm run setup:demo`, open <http://localhost:3000> and click any account u
 | ~~1a · Foundations~~ | Done |
 | ~~1b · Home~~ | Done |
 | ~~2 · Business~~ | Done |
-| **3 · School** | Admissions board, students and guardians, staff, classes and timetable, attendance, exams, gradebook and report cards, fees with installments, bus routes, library, parent view, and side-by-side campuses. |
+| ~~3 · School~~ | Done |
 | **4 · Flow** | The AI assistant, using each organization's own key (encrypted on the server), with provider and model choice, usage tracking and a spending limit. It reads freely and proposes changes you confirm with one click. |
 
 ## How it's put together
@@ -236,17 +292,20 @@ src/app/api/w/[slug]/       File routes: export, attachments, logo, backup, rest
 src/app/s/[token]/          Public view-only share pages
 src/app/invite/[token]/     Accept an invitation (sign in or create an account)
 src/lib/datasets/           One definition per table or report: the page, every download, copy and share use it
-src/lib/export/             Excel, CSV, Word, PDF, print, claim vouchers, business documents, statements, payslips
+src/lib/export/             Excel, CSV, Word, PDF, print, claim vouchers, business documents, statements, payslips, report cards
 src/lib/ledger/             Chart of accounts, balanced posting and reversals, financial statements
 src/lib/docs/               Document maths and what happens when a document changes state (with its postings)
 src/lib/inventory/          Stock movements, moving-average cost, low-stock alerts
 src/lib/hr/, payroll/       Working days, leave balances, payslip maths, payroll runs, IBANs, the WPS file
 src/lib/words.ts            Amounts in words, English and Arabic
 src/app/w/[slug]/_biz/      Shared server pages for the business modules
+src/lib/school/             School settings, grading, fee maths, timetable solver, campus scope, rollover, report cards
+src/app/apply/[slug]/       The public online application form
 src/lib/backup/             Backup file format, restore with id remapping, duplicate
 src/lib/search/             Search index with Arabic normalization
-src/lib/demo/               Demo workspaces (a year of trading, staff and payroll for Sadeem), receipt photos and logos
+src/lib/demo/               Demo workspaces (a year of trading for Sadeem, a three-campus school group), receipt photos and logos
 src/components/             Shell, dashboard widgets, data table and toolbar, record threads, UI primitives
+src/components/school/      Admissions board, timetable grid, roll call, gradebook, report cards, fees, parent view
 tests/                      Vitest unit tests and Playwright end-to-end tests
 ```
 
@@ -289,3 +348,11 @@ Tamam needs a normal Node server, for example Docker on a VPS. It doesn't suit s
 - **Extra permissions per person** on top of their role (e.g. a storekeeper with stock access).
 - **A believable demo business**: a year of Sadeem's trading (office fit-outs ordered back-to-back from the furniture supplier, a slow-paying logistics customer, rent, Kahramaa and Ooredoo bills, an 8% price rise), 15 staff from eight countries (one new arrival paid on a visa number, one paid in cash), and books that balance to the dirham.
 - **Generated receipt photos** in the demo (crumpled paper, real Doha shops, an Arabic thank-you line), so the claims pages look lived-in without stock images.
+- **Bilingual report cards on one page** (English and Arabic together), because that's what many Qatari private schools send home, plus Arabic comment suggestions that agree with the child's gender.
+- **Gradebook paste from Excel**, Arabic-digit input and «غ» for absent, because teachers often keep marks in a spreadsheet first.
+- **A timetable solver** that fills the week across the whole school with no teacher clashes, and greys out any period that would cause one.
+- **Parents told about an absence** as soon as the roll is saved, and when a report card is published.
+- **A Lusail-only principal**: staff can be tied to one campus, and everything (lists, counts, search, downloads) follows.
+- **A public online application form** with spam protection and a reference number.
+- **A "new school year" preview** before anything changes, with classmates kept together, full classes overflowing into the emptier one, and transfers when a campus stops at a grade.
+- **A believable demo school**: 735 students across three campuses, 105 staff, real Qatari family structures with siblings, a term of attendance and marks, last year's report cards, two fee runs with some families behind, a full bus, about 44 applications at every stage, and the Al-Mansouri children so the same family runs through the home and school demos.

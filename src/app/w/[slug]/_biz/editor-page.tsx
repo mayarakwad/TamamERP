@@ -6,7 +6,7 @@ import { DOC_PATH } from "@/lib/datasets/sales";
 import { DocEditor } from "@/components/business/doc-editor";
 
 /** New or edit page for a quotation, invoice, purchase order or bill. */
-export async function EditorPage({ slug, kind, id, sp }: { slug: string; kind: DocKind; id?: string; sp: Record<string, string | string[] | undefined> }) {
+export async function EditorPage({ slug, kind, id, sp }: { slug: string; kind: Exclude<DocKind, "fee">; id?: string; sp: Record<string, string | string[] | undefined> }) {
   const ws = await bizPage(slug, ["finance.manage"]);
   const sales = kind === "quote" || kind === "invoice";
   const doc = id ? await db.document.findFirst({ where: { id, orgId: ws.org.id, kind }, include: { lines: { orderBy: { sort: "asc" } } } }) : null;

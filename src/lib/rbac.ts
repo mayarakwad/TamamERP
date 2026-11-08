@@ -44,6 +44,8 @@ export type Permission =
   | "school.manage"
   | "school.teach"
   | "school.parent"
+  | "transport.manage" // bus routes, stops and riders
+  | "library.manage" // catalogue and loans
   | "exports.share";
 
 const GRANTS: Record<Role, Permission[] | "*"> = {
@@ -65,6 +67,8 @@ const GRANTS: Record<Role, Permission[] | "*"> = {
     "hr.view",
     "hr.manage",
     "school.manage",
+    "transport.manage",
+    "library.manage",
     "exports.share",
   ],
   accountant: [
@@ -84,7 +88,7 @@ const GRANTS: Record<Role, Permission[] | "*"> = {
 };
 
 /** Permissions an owner or admin may grant to one person on top of their role. */
-export const GRANTABLE: Permission[] = ["inventory.manage", "finance.view", "claims.approve", "leave.approve", "hr.view"];
+export const GRANTABLE: Permission[] = ["inventory.manage", "finance.view", "claims.approve", "leave.approve", "hr.view", "transport.manage", "library.manage"];
 
 export function parseExtras(raw: string | null | undefined): Permission[] {
   if (!raw) return [];

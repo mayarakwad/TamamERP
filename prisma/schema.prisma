@@ -127,6 +127,28 @@ model Organization {
   leaveRequests  LeaveRequest[]
   payrollRuns    PayrollRun[]
   payslips       Payslip[]
+  academicYears  AcademicYear[]
+  terms          Term[]
+  grades         Grade[]
+  subjects       Subject[]
+  sections       Section[]
+  assignments    TeachingAssignment[]
+  timetable      TimetableSlot[]
+  guardians      Guardian[]
+  students       Student[]
+  studentLinks   StudentGuardian[]
+  applications   Application[]
+  rolls          AttendanceRoll[]
+  studentMarks   StudentAttendance[]
+  assessments    Assessment[]
+  marks          Mark[]
+  reportCards    ReportCard[]
+  feeRates       FeeRate[]
+  routes         BusRoute[]
+  stops          BusStop[]
+  books          Book[]
+  loans          Loan[]
+  announcements  Announcement[]
 }
 
 /// A campus (schools) or branch (businesses). Optional for homes.
@@ -145,6 +167,10 @@ model Campus {
   memberships Membership[]
   stockLevels StockLevel[]
   stockMoves  StockMove[]
+  sections    Section[]
+  students    Student[]
+  applications Application[]
+  routes      BusRoute[]
 
   @@unique([orgId, code])
 }
@@ -711,6 +737,10 @@ model Document {
   paid        Int       @default(0)
   /// Created from (quote → invoice, purchase order → bill)
   sourceId    String?
+  /// School fee invoices: the student the fees are for
+  studentId   String?
+  /// School fee invoices: academic year and installment ("2026-27/2")
+  installment String?
   createdById String
   issuedAt    DateTime?
   createdAt   DateTime  @default(now())
@@ -720,9 +750,11 @@ model Document {
   party       Party               @relation(fields: [partyId], references: [id])
   lines       DocumentLine[]
   allocations PaymentAllocation[]
+  student     Student?            @relation(fields: [studentId], references: [id], onDelete: SetNull)
 
   @@unique([orgId, number])
   @@index([orgId, kind, status])
+  @@index([studentId])
   @@index([partyId])
 }
 
@@ -844,6 +876,10 @@ model Employee {
   attendance AttendanceDay[]
   leave      LeaveRequest[]
   payslips   Payslip[]
+  homerooms  Section[]
+  teaching   TeachingAssignment[]
+  periods    TimetableSlot[]
+  loans      Loan[]
 
   @@unique([orgId, number])
 }
@@ -952,4 +988,535 @@ model Payslip {
   employee Employee     @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@unique([runId, employeeId])
+}
+
+// ───────────────────────── School ─────────────────────────
+
+model AcademicYear {
+  id        String   @id @default(cuid())
+  orgId     String
+  /// "2026–27"
+  name      String
+  startDate DateTime
+  endDate   DateTime
+  /// The year the app shows by default
+  current   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  org          Organization  @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  terms        Term[]
+  sections     Section[]
+  applications Application[]
+  feeRates     FeeRate[]
+
+  @@unique([orgId, name])
+}
+
+model Term {
+  id        String   @id @default(cuid())
+  orgId     String
+  yearId    String
+  name      String
+  nameAr    String?
+  sort      Int
+  startDate DateTime
+  endDate   DateTime
+
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  year        AcademicYear @relation(fields: [yearId], references: [id], onDelete: Cascade)
+  assessments Assessment[]
+  reportCards ReportCard[]
+
+  @@index([yearId])
+}
+
+/// A year group: KG1, KG2, Grade 1 … Grade 12. Shared by every campus.
+model Grade {
+  id     String  @id @default(cuid())
+  orgId  String
+  name   String
+  nameAr String?
+  /// Order: KG1 = -1, KG2 = 0, Grade 1 = 1 …
+  level  Int
+  /// kg | primary | middle | secondary
+  stage  String
+
+  org          Organization  @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  sections     Section[]
+  students     Student[]
+  applications Application[]
+  feeRates     FeeRate[]
+
+  @@unique([orgId, level])
+}
+
+model Subject {
+  id     String  @id @default(cuid())
+  orgId  String
+  code   String
+  name   String
+  nameAr String?
+  color  String?
+  sort   Int     @default(0)
+
+  org         Organization         @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  assignments TeachingAssignment[]
+  slots       TimetableSlot[]
+  assessments Assessment[]
+
+  @@unique([orgId, code])
+}
+
+/// A class: one grade at one campus in one year ("5-B").
+model Section {
+  id         String  @id @default(cuid())
+  orgId      String
+  yearId     String
+  campusId   String
+  gradeId    String
+  /// The letter or name after the grade: "B" shows as "5-B"
+  name       String
+  room       String?
+  capacity   Int     @default(25)
+  /// Homeroom (class) teacher
+  homeroomId String?
+
+  org         Organization         @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  year        AcademicYear         @relation(fields: [yearId], references: [id], onDelete: Cascade)
+  campus      Campus               @relation(fields: [campusId], references: [id], onDelete: Cascade)
+  grade       Grade                @relation(fields: [gradeId], references: [id], onDelete: Cascade)
+  homeroom    Employee?            @relation(fields: [homeroomId], references: [id], onDelete: SetNull)
+  students    Student[]
+  assignments TeachingAssignment[]
+  slots       TimetableSlot[]
+  rolls       AttendanceRoll[]
+  absences    StudentAttendance[]
+  assessments Assessment[]
+  reportCards ReportCard[]
+
+  @@unique([yearId, campusId, gradeId, name])
+  @@index([orgId, yearId])
+}
+
+/// Who teaches which subject to which class, and how many periods a week.
+model TeachingAssignment {
+  id        String  @id @default(cuid())
+  orgId     String
+  sectionId String
+  subjectId String
+  teacherId String?
+  periods   Int     @default(4)
+
+  org     Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  section Section      @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  subject Subject      @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  teacher Employee?    @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+
+  @@unique([sectionId, subjectId])
+  @@index([teacherId])
+}
+
+model TimetableSlot {
+  id        String  @id @default(cuid())
+  orgId     String
+  sectionId String
+  /// 0 = Sunday … 6 = Saturday
+  day       Int
+  /// 1-based period number (times are in the school settings)
+  period    Int
+  subjectId String
+  teacherId String?
+  room      String?
+
+  org     Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  section Section      @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  subject Subject      @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  teacher Employee?    @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+
+  @@unique([sectionId, day, period])
+  @@index([teacherId, day, period])
+}
+
+model Guardian {
+  id        String   @id @default(cuid())
+  orgId     String
+  name      String
+  nameAr    String?
+  phone     String?
+  email     String?
+  qid       String?
+  employer  String?
+  address   String?
+  addressAr String?
+  /// The guardian's Tamam login, for the parent view
+  userId    String?
+  /// Fee invoices for this family are addressed to this account
+  partyId   String?
+  createdAt DateTime @default(now())
+
+  org          Organization      @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  children     StudentGuardian[]
+  applications Application[]
+
+  @@index([orgId])
+  @@index([userId])
+}
+
+model Student {
+  id             String    @id @default(cuid())
+  orgId          String
+  /// Admission number
+  number         String
+  name           String
+  nameAr         String?
+  /// m | f
+  gender         String
+  dob            DateTime
+  /// ISO 3166 alpha-2
+  nationality    String?
+  qid            String?
+  qidExpiry      DateTime?
+  passportNumber String?
+  campusId       String
+  gradeId        String
+  sectionId      String?
+  /// active | upcoming (joins next year) | withdrawn | graduated
+  status         String    @default("active")
+  joinedOn       DateTime
+  leftOn         DateTime?
+  bloodGroup     String?
+  /// Allergies, conditions, medication. Teachers see a flag.
+  medical        String?
+  busStopId      String?
+  /// Fee discount on tuition besides siblings: staff | scholarship
+  discountKind   String?
+  /// basis points (5000 = 50%)
+  discountPct    Int       @default(0)
+  previousSchool String?
+  avatarColor    String?
+  notes          String?
+  createdAt      DateTime  @default(now())
+
+  org         Organization        @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  campus      Campus              @relation(fields: [campusId], references: [id])
+  grade       Grade               @relation(fields: [gradeId], references: [id])
+  section     Section?            @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+  busStop     BusStop?            @relation(fields: [busStopId], references: [id], onDelete: SetNull)
+  guardians   StudentGuardian[]
+  attendance  StudentAttendance[]
+  marks       Mark[]
+  reportCards ReportCard[]
+  loans       Loan[]
+  invoices    Document[]
+
+  @@unique([orgId, number])
+  @@index([orgId, status])
+  @@index([sectionId])
+}
+
+model StudentGuardian {
+  id         String  @id @default(cuid())
+  orgId      String
+  studentId  String
+  guardianId String
+  /// father | mother | guardian | grandparent | other
+  relation   String
+  /// Pays the fees and receives the invoices
+  primary    Boolean @default(false)
+
+  org      Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  student  Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  guardian Guardian     @relation(fields: [guardianId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, guardianId])
+  @@index([guardianId])
+}
+
+/// Admissions: from application to enrolment.
+model Application {
+  id               String    @id @default(cuid())
+  orgId            String
+  number           String
+  yearId           String
+  campusId         String
+  gradeId          String
+  childName        String
+  childNameAr      String?
+  gender           String
+  dob              DateTime
+  nationality      String?
+  previousSchool   String?
+  guardianName     String
+  guardianNameAr   String?
+  guardianRelation String    @default("father")
+  guardianPhone    String
+  guardianEmail    String?
+  /// A family already at the school (siblings)
+  guardianId       String?
+  /// applied | assessment | offered | enrolled | declined | withdrawn
+  stage            String    @default("applied")
+  stageAt          DateTime  @default(now())
+  assessmentAt     DateTime?
+  /// percent
+  assessmentScore  Int?
+  /// web | walkin | referral | sibling
+  source           String    @default("walkin")
+  notes            String?
+  studentId        String?
+  /// null when the family applied through the public form
+  createdById      String?
+  createdAt        DateTime  @default(now())
+
+  org      Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  year     AcademicYear @relation(fields: [yearId], references: [id], onDelete: Cascade)
+  campus   Campus       @relation(fields: [campusId], references: [id], onDelete: Cascade)
+  grade    Grade        @relation(fields: [gradeId], references: [id], onDelete: Cascade)
+  guardian Guardian?    @relation(fields: [guardianId], references: [id], onDelete: SetNull)
+
+  @@unique([orgId, number])
+  @@index([orgId, stage])
+}
+
+/// One roll call: a class on a day. Everyone without a StudentAttendance row was present.
+model AttendanceRoll {
+  id        String   @id @default(cuid())
+  orgId     String
+  sectionId String
+  /// Noon in Doha on the school day
+  date      DateTime
+  takenById String
+  takenAt   DateTime @default(now())
+  /// Students on the roll that day
+  size      Int
+  absent    Int      @default(0)
+  late      Int      @default(0)
+  excused   Int      @default(0)
+
+  org     Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  section Section      @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@unique([sectionId, date])
+  @@index([orgId, date])
+}
+
+/// Exceptions only: absences, late arrivals and excused days.
+model StudentAttendance {
+  id         String    @id @default(cuid())
+  orgId      String
+  studentId  String
+  sectionId  String
+  date       DateTime
+  /// absent | late | excused
+  status     String
+  /// Minutes late
+  minutes    Int?
+  note       String?
+  notifiedAt DateTime?
+
+  org     Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  student Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  section Section      @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, date])
+  @@index([orgId, date])
+}
+
+/// Anything marked: an exam paper, a quiz, an assignment or a project.
+model Assessment {
+  id          String   @id @default(cuid())
+  orgId       String
+  termId      String
+  sectionId   String
+  subjectId   String
+  name        String
+  nameAr      String?
+  /// exam | quiz | assignment | project
+  kind        String
+  date        DateTime
+  /// Marked out of
+  maxScore    Int
+  /// Share of the term grade (weights in a term are scaled to 100)
+  weight      Int
+  createdById String?
+  createdAt   DateTime @default(now())
+
+  org     Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  term    Term         @relation(fields: [termId], references: [id], onDelete: Cascade)
+  section Section      @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  subject Subject      @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  marks   Mark[]
+
+  @@index([sectionId, subjectId, termId])
+  @@index([orgId, termId])
+}
+
+model Mark {
+  id           String   @id @default(cuid())
+  orgId        String
+  assessmentId String
+  studentId    String
+  /// hundredths of a mark (8550 = 85.5)
+  score        Int?
+  absent       Boolean  @default(false)
+  comment      String?
+  updatedAt    DateTime @updatedAt
+
+  org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  assessment Assessment   @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  student    Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([assessmentId, studentId])
+  @@index([studentId])
+}
+
+model ReportCard {
+  id               String    @id @default(cuid())
+  orgId            String
+  studentId        String
+  termId           String
+  /// The class at the time (null for imported history; the snapshot keeps its name)
+  sectionId        String?
+  /// draft | published
+  status           String    @default("draft")
+  teacherComment   String?
+  principalComment String?
+  /// { [subjectId]: comment }
+  subjectComments  Json?
+  /// Frozen when published: subjects, results and attendance
+  snapshot         Json?
+  publishedAt      DateTime?
+  publishedById    String?
+  updatedAt        DateTime  @updatedAt
+
+  org     Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  student Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  term    Term         @relation(fields: [termId], references: [id], onDelete: Cascade)
+  section Section?     @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+
+  @@unique([studentId, termId])
+  @@index([sectionId, termId])
+}
+
+/// Yearly fees per grade: tuition | books | registration (new students only)
+model FeeRate {
+  id        String @id @default(cuid())
+  orgId     String
+  yearId    String
+  gradeId   String
+  component String
+  /// dirhams per year
+  amount    Int
+
+  org   Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  year  AcademicYear @relation(fields: [yearId], references: [id], onDelete: Cascade)
+  grade Grade        @relation(fields: [gradeId], references: [id], onDelete: Cascade)
+
+  @@unique([yearId, gradeId, component])
+}
+
+model BusRoute {
+  id             String  @id @default(cuid())
+  orgId          String
+  campusId       String
+  /// "Bus 4"
+  code           String
+  name           String
+  nameAr         String?
+  driverName     String?
+  driverPhone    String?
+  attendantName  String?
+  attendantPhone String?
+  plate          String?
+  capacity       Int     @default(30)
+  /// Yearly transport fee in dirhams
+  annualFee      Int     @default(0)
+  color          String?
+
+  org    Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  campus Campus       @relation(fields: [campusId], references: [id], onDelete: Cascade)
+  stops  BusStop[]
+
+  @@unique([orgId, code])
+}
+
+model BusStop {
+  id      String  @id @default(cuid())
+  orgId   String
+  routeId String
+  name    String
+  nameAr  String?
+  sort    Int
+  /// "06:42"
+  pickup  String?
+  dropoff String?
+
+  org      Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  route    BusRoute     @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  students Student[]
+
+  @@index([routeId])
+}
+
+model Book {
+  id         String   @id @default(cuid())
+  orgId      String
+  campusId   String?
+  title      String
+  author     String?
+  isbn       String?
+  /// en | ar | fr | other
+  language   String   @default("en")
+  category   String?
+  shelf      String?
+  copies     Int      @default(1)
+  coverColor String?
+  createdAt  DateTime @default(now())
+
+  org   Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  loans Loan[]
+
+  @@index([orgId])
+}
+
+model Loan {
+  id         String    @id @default(cuid())
+  orgId      String
+  bookId     String
+  studentId  String?
+  employeeId String?
+  borrowedOn DateTime
+  dueOn      DateTime
+  returnedOn DateTime?
+  remindedAt DateTime?
+  issuedById String
+
+  org      Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  book     Book         @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  student  Student?     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  employee Employee?    @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([orgId, returnedOn])
+  @@index([bookId])
+}
+
+model Announcement {
+  id          String   @id @default(cuid())
+  orgId       String
+  /// null = every campus
+  campusId    String?
+  /// everyone | staff | parents
+  audience    String   @default("everyone")
+  /// Parents of one grade only
+  gradeId     String?
+  title       String
+  titleAr     String?
+  body        String
+  bodyAr      String?
+  pinned      Boolean  @default(false)
+  authorId    String
+  publishedAt DateTime @default(now())
+
+  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId, publishedAt])
 }

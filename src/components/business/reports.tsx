@@ -31,14 +31,14 @@ export const REPORT_META: Record<string, { title: MessageKey; desc: MessageKey; 
 };
 
 /** Report cards with a headline number each. */
-export function ReportsIndex({ slug, headlines }: { slug: string; headlines: Record<string, { value: number; hint?: string }> }) {
+export function ReportsIndex({ slug, headlines, hide = [] }: { slug: string; headlines: Record<string, { value: number; hint?: string }>; hide?: string[] }) {
   const { t, fmt } = useI18n();
   return (
     <div className="space-y-[var(--gap)]">
       <PageHeader title={t("nav.reports")} subtitle={t("reports.subtitle")} />
       <div className="grid gap-[var(--gap)] sm:grid-cols-2 xl:grid-cols-3">
         {Object.entries(REPORT_META)
-          .filter(([id]) => id !== "ledger")
+          .filter(([id]) => id !== "ledger" && !hide.includes(id))
           .map(([id, m]) => {
             const h = headlines[id];
             return (

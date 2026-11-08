@@ -13,6 +13,6 @@ export default defineConfig({
     command: "npm run db:seed && npx next dev -p 3200",
     url: "http://localhost:3200/login",
     reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    timeout: 300_000,
   },
 });

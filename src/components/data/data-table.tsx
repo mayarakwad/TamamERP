@@ -57,7 +57,7 @@ export function DataTable({ slug, result, renderCell = {}, mobileRow, empty }: D
           <thead className="bg-sunken/90">
             <tr>
               {result.columns.map((c) => (
-                <th key={c.key} scope="col" className={cn("px-4 py-2.5 text-start text-xs font-semibold whitespace-nowrap text-muted", numeric(c) && "text-end", c.hideOnMobile && "hidden lg:table-cell")}>
+                <th key={c.key} scope="col" className={cn("px-4 py-2.5 text-start text-xs font-semibold whitespace-nowrap text-muted", numeric(c) && "text-end", c.hideOnMobile && "hidden lg:table-cell", c.exportOnly && "hidden")}>
                   <button type="button" onClick={() => toggle(c.key)} className={cn("inline-flex items-center gap-1 hover:text-fg", numeric(c) && "flex-row-reverse")}>
                     {columnLabel(c, t)}
                     {sort?.key === c.key ? sort.dir === 1 ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" /> : <ChevronsUpDown className="size-3 opacity-40" />}
@@ -75,7 +75,7 @@ export function DataTable({ slug, result, renderCell = {}, mobileRow, empty }: D
                 style={{ height: "var(--row)" }}
               >
                 {result.columns.map((c, i) => (
-                  <td key={c.key} className={cn("px-4 py-2", numeric(c) && "tabular text-end", (i === 0 || numeric(c) || c.type === "date" || c.type === "enum") && "whitespace-nowrap", c.hideOnMobile && "hidden lg:table-cell")}>
+                  <td key={c.key} className={cn("px-4 py-2", numeric(c) && "tabular text-end", (i === 0 || numeric(c) || c.type === "date" || c.type === "enum") && "whitespace-nowrap", c.hideOnMobile && "hidden lg:table-cell", c.exportOnly && "hidden")}>
                     {i === 0 && row.href ? (
                       <Link href={`/w/${slug}/${row.href}`} onClick={(e) => e.stopPropagation()} className="font-medium hover:text-accent">
                         {renderCell[c.key]?.(row) ?? formatCell(c, row.cells[c.key], fmt, t)}
@@ -92,7 +92,7 @@ export function DataTable({ slug, result, renderCell = {}, mobileRow, empty }: D
             <tfoot className="border-t-2 border-line bg-sunken/60 font-semibold">
               <tr>
                 {result.columns.map((c, i) => (
-                  <td key={c.key} className={cn("px-4 py-2.5", numeric(c) && "tabular text-end", c.hideOnMobile && "hidden lg:table-cell")}>
+                  <td key={c.key} className={cn("px-4 py-2.5", numeric(c) && "tabular text-end", c.hideOnMobile && "hidden lg:table-cell", c.exportOnly && "hidden")}>
                     {i === 0 ? `${t("toolbar.total")} · ${t("toolbar.rows", { count: fmt.number(rows.length) })}` : c.total ? formatCell(c, rows.reduce((s, r) => s + (Number(r.cells[c.key]) || 0), 0), fmt, t) : ""}
                   </td>
                 ))}

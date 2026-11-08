@@ -70,6 +70,7 @@ export function ListView({
   emptyAction,
   renderCell = {},
   mobileRow,
+  top,
   children,
 }: {
   slug: string;
@@ -90,6 +91,8 @@ export function ListView({
   emptyAction?: React.ReactNode;
   renderCell?: Record<string, (row: Row) => React.ReactNode>;
   mobileRow?: (row: Row) => React.ReactNode;
+  /** Shown between the header and the filters (e.g. a section's sub-navigation) */
+  top?: React.ReactNode;
   children?: React.ReactNode;
 }) {
   const { t, fmt } = useI18n();
@@ -141,6 +144,7 @@ export function ListView({
           </>
         }
       />
+      {top}
       {chips && chips.length > 0 && (
         <div className="mb-4">
           <FilterChips items={chips.map((c) => ({ href: hrefWith(chipParam, c.value), label: c.label, active: (params.get(chipParam) ?? null) === c.value, count: c.count }))} />

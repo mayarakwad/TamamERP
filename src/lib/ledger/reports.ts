@@ -160,7 +160,8 @@ export interface AgingRow {
 /** Open invoices (receivables) or bills (payables) by how overdue they are. */
 export async function aging(db: Db, orgId: string, kind: "invoice" | "bill", asOf: Date): Promise<AgingRow[]> {
   const docs = await db.document.findMany({
-    where: { orgId, kind, status: { in: kind === "invoice" ? ["issued", "partial"] : ["posted", "partial"] }, date: { lte: asOf } },
+    // School fee invoices are receivables too.
+    where: { orgId, kind: kind === "invoice" ? { in: ["invoice", "fee"] } : "bill", status: { in: kind === "invoice" ? ["issued", "partial"] : ["posted", "partial"] }, date: { lte: asOf } },
     include: { party: { select: { id: true, name: true, nameAr: true } } },
   });
   const rows = new Map<string, AgingRow>();

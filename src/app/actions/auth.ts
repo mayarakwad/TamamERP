@@ -11,6 +11,7 @@ import { parsePrefs } from "@/lib/prefs";
 import { writePrefsCookie } from "./prefs";
 import { createHomeDefaults } from "@/lib/demo/home";
 import { ensureBusinessDefaults } from "@/lib/ledger/chart";
+import { ensureSchoolDefaults } from "@/lib/school/defaults";
 import { isOrgType } from "@/lib/rbac";
 import { getSystem } from "@/lib/system";
 
@@ -155,6 +156,7 @@ export async function signup(_prev: FormState, formData: FormData): Promise<Form
       for (const [i, name] of list.entries()) {
         await tx.campus.create({ data: { orgId: org.id, name, code: `C${i + 1}` } });
       }
+      await ensureSchoolDefaults(tx, org.id);
     }
     if (d.type === "business") {
       await tx.campus.create({ data: { orgId: org.id, name: "Main branch", nameAr: "الفرع الرئيسي", code: "MAIN" } });

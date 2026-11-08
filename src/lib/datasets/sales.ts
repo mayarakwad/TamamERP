@@ -8,8 +8,8 @@ import { DOC_STATUSES, type DocKind } from "../docs/ops";
 
 // Customers, suppliers, quotations, invoices, purchase orders, bills and payments.
 
-export const DOC_PATH: Record<DocKind, string> = { quote: "sales/quotations", invoice: "sales/invoices", po: "purchases/orders", bill: "purchases/bills" };
-export const DOC_TITLE: Record<DocKind, MessageKey> = { quote: "nav.quotations", invoice: "nav.invoices", po: "nav.purchaseOrders", bill: "nav.purchaseBills" };
+export const DOC_PATH: Record<DocKind, string> = { quote: "sales/quotations", invoice: "sales/invoices", po: "purchases/orders", bill: "purchases/bills", fee: "fees/invoices" };
+export const DOC_TITLE: Record<DocKind, MessageKey> = { quote: "nav.quotations", invoice: "nav.invoices", po: "nav.purchaseOrders", bill: "nav.purchaseBills", fee: "nav.fees" };
 
 const statusOptions = (kind: DocKind): Record<string, MessageKey> => Object.fromEntries([...DOC_STATUSES[kind], "overdue", "partReceived"].map((s) => [s, `status.${s}` as MessageKey]));
 
@@ -189,4 +189,4 @@ export const suppliersDataset = partiesDataset("suppliers", "supplier");
 export const paymentsInDataset = paymentsDataset("payments-in", "in");
 export const paymentsOutDataset = paymentsDataset("payments-out", "out");
 
-export const DOC_DATASET: Record<DocKind, Dataset<Workspace>> = { quote: quotationsDataset, invoice: invoicesDataset, po: purchaseOrdersDataset, bill: billsDocDataset };
+export const DOC_DATASET: Record<DocKind, Dataset<Workspace>> = { quote: quotationsDataset, invoice: invoicesDataset, po: purchaseOrdersDataset, bill: billsDocDataset, fee: invoicesDataset };

@@ -8,7 +8,7 @@ import { getThread } from "@/lib/thread";
 import { DocView } from "@/components/business/doc-view";
 
 /** One quotation, invoice, purchase order or bill. */
-export async function DocPage({ slug, kind, id }: { slug: string; kind: DocKind; id: string }) {
+export async function DocPage({ slug, kind, id }: { slug: string; kind: Exclude<DocKind, "fee">; id: string }) {
   const ws = await bizPage(slug, kind === "po" ? ["finance.view", "inventory.manage"] : ["finance.view"]);
   await connection();
   const doc = await db.document.findFirst({

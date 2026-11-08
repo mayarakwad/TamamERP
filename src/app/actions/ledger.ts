@@ -11,7 +11,7 @@ import type { ActionResult } from "./claims";
 
 async function financeWs(slug: string) {
   const ws = await getWorkspace(slug);
-  if (ws.orgType !== "business" || !ws.can("finance.manage")) return null;
+  if (ws.orgType === "home" || !ws.can("finance.manage")) return null;
   return ws;
 }
 

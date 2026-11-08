@@ -5,6 +5,7 @@ import type { Prisma, PrismaClient } from "../../generated/prisma/client";
 import { seedHomeDemo } from "./home";
 import { seedBusinessDemo } from "./business";
 import { seedBusinessPeople } from "./people";
+import { seedSchoolDemo } from "./school";
 import { makeIban } from "../payroll/banks";
 import { reindexOrg } from "../search/index-core";
 import { writeDemoLogo } from "./logos";
@@ -31,6 +32,8 @@ export const DEMO_PEOPLE = {
 
 export type DemoPerson = keyof typeof DEMO_PEOPLE;
 
+export const DEMO_SLUGS = { home: "al-mansouri-home", business: "sadeem", school: "al-manara" } as const;
+
 /** Accounts shown as one-click chips on the login page. */
 export const DEMO_LOGINS: { person: DemoPerson; workspace: "home" | "business" | "school"; role: string }[] = [
   { person: "hessa", workspace: "home", role: "owner" },
@@ -39,6 +42,7 @@ export const DEMO_LOGINS: { person: DemoPerson; workspace: "home" | "business" |
   { person: "priya", workspace: "business", role: "accountant" },
   { person: "fatima", workspace: "school", role: "owner" },
   { person: "aisha", workspace: "school", role: "teacher" },
+  { person: "hessa", workspace: "school", role: "parent" },
 ];
 
 export async function seedWorkspaces(db: Db, passwordHash: string, now = new Date()) {
@@ -110,7 +114,7 @@ export async function seedWorkspaces(db: Db, passwordHash: string, now = new Dat
   await seedBusinessDemo(db as PrismaClient, biz.id, { khalid: users.khalid, omar: users.omar, priya: users.priya, joseph: users.joseph }, { showroom: showroom.id, warehouse: warehouse.id }, now);
   await seedBusinessPeople(db as PrismaClient, biz.id, { khalid: users.khalid, omar: users.omar, priya: users.priya, joseph: users.joseph }, { showroom: showroom.id, warehouse: warehouse.id }, now);
 
-  // ── School group ── (modules arrive in stage 3)
+  // ── School group ──
   const school = await db.organization.create({
     data: {
       type: "school",
@@ -137,10 +141,18 @@ export async function seedWorkspaces(db: Db, passwordHash: string, now = new Dat
       { orgId: school.id, userId: users.sarah, role: "admin", title: "Principal, Lusail", titleAr: "مديرة فرع لوسيل", campusId: campuses[1].id },
       { orgId: school.id, userId: users.rami, role: "accountant", title: "Finance officer", titleAr: "مسؤول المالية" },
       { orgId: school.id, userId: users.aisha, role: "teacher", title: "Grade 5 homeroom", titleAr: "رائدة الصف الخامس", campusId: campuses[0].id },
-      { orgId: school.id, userId: users.hessa, role: "parent", title: "Parent of Ahmed (Grade 7)", titleAr: "ولية أمر أحمد (الصف السابع)" },
-      { orgId: school.id, userId: users.yousef, role: "employee", title: "Transport coordinator", titleAr: "منسق النقل" },
+      { orgId: school.id, userId: users.hessa, role: "parent", title: "Parent of Ahmed and Mariam", titleAr: "ولية أمر أحمد ومريم" },
+      { orgId: school.id, userId: users.khalid, role: "parent", title: "Parent of Ahmed and Mariam", titleAr: "ولي أمر أحمد ومريم" },
+      { orgId: school.id, userId: users.yousef, role: "employee", title: "Transport coordinator", titleAr: "منسق النقل", extraPermissions: "transport.manage" },
     ],
   });
+  await seedSchoolDemo(
+    db,
+    school.id,
+    { fatima: users.fatima, sarah: users.sarah, rami: users.rami, aisha: users.aisha, hessa: users.hessa, khalid: users.khalid, yousef: users.yousef },
+    { WAB: campuses[0].id, LUS: campuses[1].id, WAK: campuses[2].id },
+    now,
+  );
 
   // Where each person lands after signing in.
   const landing: Partial<Record<DemoPerson, string>> = {

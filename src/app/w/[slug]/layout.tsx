@@ -1,4 +1,5 @@
 import { getViewerWorkspaces, getWorkspace } from "@/lib/auth/dal";
+import { getSchool } from "@/lib/school/scope";
 import { Shell } from "@/components/shell/shell";
 import type { ShellData } from "@/components/shell/types";
 import type { OrgType, Role } from "@/lib/rbac";
@@ -12,6 +13,7 @@ export default async function WorkspaceLayout({ children, params }: LayoutProps<
   const { slug } = await params;
   const ws = await getWorkspace(slug);
   const workspaces = await getViewerWorkspaces(ws.viewer.id);
+  const school = ws.orgType === "school" && ws.org.campuses.length > 1 && ws.role !== "parent" ? await getSchool(slug) : null;
 
   const data: ShellData = {
     slug,
@@ -23,6 +25,9 @@ export default async function WorkspaceLayout({ children, params }: LayoutProps<
     timezone: ws.org.timezone,
     logoUrl: ws.org.logoPath ? `/api/w/${slug}/logo?v=${ws.org.updatedAt.getTime()}` : null,
     campusCount: ws.org.campuses.length,
+    campus: school
+      ? { options: ws.org.campuses.map((c) => ({ id: c.id, name: c.name, nameAr: c.nameAr, color: c.color })), selected: school.campus?.id ?? null, locked: school.locked }
+      : undefined,
     role: ws.role,
     extras: ws.extras,
     title: ws.membership.title,

@@ -4,7 +4,8 @@ const W = "/w/al-mansouri-home";
 
 async function loginAs(page: Page, who: RegExp) {
   await page.goto("/login");
-  await page.getByRole("button", { name: who }).click();
+  // The first chip for a person opens their main workspace (Hessa also appears as a school parent).
+  await page.getByRole("button", { name: who }).first().click();
   await page.waitForURL(/\/w\//);
 }
 

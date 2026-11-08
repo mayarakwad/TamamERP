@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import { db } from "@/lib/db";
 import { getWorkspace } from "@/lib/auth/dal";
 import { getHomeDashboard } from "@/lib/home/dashboard";
 import { hourIn } from "@/lib/format";
 import { pick } from "@/lib/i18n";
 import { getI18n } from "@/lib/i18n/server";
 import { HomeDashboard } from "@/components/dashboard/home-dashboard";
-import { WorkspaceDashboard } from "@/components/dashboard/workspace-dashboard";
 import { BusinessDashboard } from "@/components/dashboard/business-dashboard";
 import { getBizDashboard } from "@/lib/biz-dashboard";
+import { SchoolDashboard } from "@/components/dashboard/school-dashboard";
+import { getSchoolDashboard } from "@/lib/school/dashboard";
+import { getSchool } from "@/lib/school/scope";
 import type { DashboardLayout } from "@/app/actions/dashboard";
-import type { Role } from "@/lib/rbac";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
@@ -38,23 +38,6 @@ export default async function DashboardPage({ params }: PageProps<"/w/[slug]">) 
     return <BusinessDashboard slug={slug} data={data} now={now.toISOString()} greeting={greeting} firstName={firstName} layout={layout} />;
   }
 
-  const [campuses, members] = await Promise.all([
-    db.campus.findMany({ where: { orgId: ws.org.id }, orderBy: { name: "asc" }, include: { _count: { select: { memberships: true } } } }),
-    db.membership.findMany({ where: { orgId: ws.org.id, status: "active" }, include: { user: true }, orderBy: { createdAt: "asc" }, take: 8 }),
-  ]);
-
-  return (
-    <WorkspaceDashboard
-      slug={slug}
-      orgType={ws.orgType}
-      role={ws.role}
-      stage="3"
-      now={now.toISOString()}
-      greeting={greeting}
-      firstName={firstName}
-      layout={layout}
-      campuses={campuses.map((c) => ({ id: c.id, name: c.name, nameAr: c.nameAr, code: c.code, color: c.color, members: c._count.memberships }))}
-      members={members.map((m) => ({ id: m.id, name: m.user.name, nameAr: m.user.nameAr, avatarColor: m.user.avatarColor, role: m.role as Role, title: m.title, titleAr: m.titleAr }))}
-    />
-  );
+  const data = await getSchoolDashboard(await getSchool(slug), now);
+  return <SchoolDashboard slug={slug} data={data} now={now.toISOString()} greeting={greeting} firstName={firstName} layout={layout} />;
 }

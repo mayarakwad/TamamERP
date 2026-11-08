@@ -10,7 +10,7 @@ const DOC_PATH: Record<string, string> = { quote: "sales/quotations", invoice: "
 
 export default async function JournalEntryPage({ params }: PageProps<"/w/[slug]/finance/journals/[id]">) {
   const { slug, id } = await params;
-  const ws = await bizPage(slug, ["finance.view"]);
+  const ws = await bizPage(slug, ["finance.view"], ["business", "school"]);
   const e = await db.journalEntry.findFirst({ where: { id, orgId: ws.org.id }, include: { lines: { include: { account: true }, orderBy: { debit: "desc" } } } });
   if (!e) notFound();
   let sourceHref: string | null = null;

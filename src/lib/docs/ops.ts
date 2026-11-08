@@ -11,15 +11,16 @@ import { docTotals, lineParts, stockValue } from "./math";
 
 type Db = PrismaClient | Prisma.TransactionClient;
 
-export type DocKind = "quote" | "invoice" | "po" | "bill";
+export type DocKind = "quote" | "invoice" | "po" | "bill" | "fee";
 
-export const DOC_PREFIX: Record<DocKind, string> = { quote: "QUO", invoice: "INV", po: "PO", bill: "BILL" };
+export const DOC_PREFIX: Record<DocKind, string> = { quote: "QUO", invoice: "INV", po: "PO", bill: "BILL", fee: "FEE" };
 
 export const DOC_STATUSES: Record<DocKind, string[]> = {
   quote: ["draft", "sent", "accepted", "declined", "converted"],
   invoice: ["draft", "issued", "partial", "paid", "void"],
   po: ["draft", "sent", "partial", "received", "billed", "cancelled"],
   bill: ["draft", "posted", "partial", "paid", "void"],
+  fee: ["draft", "issued", "partial", "paid", "void"],
 };
 
 export const isSalesKind = (k: string) => k === "quote" || k === "invoice";
@@ -133,6 +134,16 @@ export async function issueInvoice(db: Db, orgId: string, id: string, userId: st
   return db.document.update({ where: { id }, data: { status: "issued", issuedAt: at, campusId } });
 }
 
+/** Issue a school fee invoice: receivable up, each line to its income account (tuition, transport …). */
+export async function issueFee(db: Db, orgId: string, id: string, userId: string, at = new Date()) {
+  const doc = await loadDoc(db, orgId, id, "fee");
+  if (doc.status !== "draft") throw new DocError("docs.notDraft");
+  const lines: PostLine[] = [{ role: "receivable", debit: doc.total, partyId: doc.partyId }];
+  for (const l of doc.lines) lines.push(l.accountId ? { accountId: l.accountId, credit: l.amount } : { role: "tuition", credit: l.amount });
+  await postEntry(db, { orgId, date: doc.date, memo: `${doc.number} · ${doc.party.name}`, sourceType: "fee", sourceId: doc.id, createdById: userId, lines });
+  return db.document.update({ where: { id }, data: { status: "issued", issuedAt: at } });
+}
+
 /** Turn a quotation into a draft invoice with the same lines. */
 export async function convertQuote(db: Db, orgId: string, id: string, userId: string, date = new Date(), invoiceTerms?: string | null) {
   const q = await loadDoc(db, orgId, id, "quote");
@@ -225,7 +236,7 @@ export async function postBill(db: Db, orgId: string, id: string, userId: string
 /** Void an issued invoice or posted bill that has no payments: reverse its entries and stock. */
 export async function voidDocument(db: Db, orgId: string, id: string, userId: string, date = new Date()) {
   const doc = await loadDoc(db, orgId, id);
-  if (!["invoice", "bill"].includes(doc.kind) || !["issued", "posted"].includes(doc.status)) throw new DocError("docs.notVoidable");
+  if (!["invoice", "bill", "fee"].includes(doc.kind) || !["issued", "posted"].includes(doc.status)) throw new DocError("docs.notVoidable");
   if (doc.paid > 0) throw new DocError("docs.hasPayments");
   await reverseSource(db, { orgId, sourceType: doc.kind, sourceId: doc.id, date, createdById: userId, memo: `Void ${doc.number}` });
   const moves = await db.stockMove.findMany({ where: { orgId, sourceType: "document", sourceId: doc.id } });
@@ -255,7 +266,7 @@ export interface PaymentInput {
 function statusAfterPayment(kind: string, total: number, paid: number) {
   if (paid >= total) return "paid";
   if (paid > 0) return "partial";
-  return kind === "invoice" ? "issued" : "posted";
+  return kind === "invoice" || kind === "fee" ? "issued" : "posted";
 }
 
 /** Money received from a customer or paid to a supplier, applied to open documents. */
@@ -270,8 +281,8 @@ export async function recordPayment(db: Db, p: PaymentInput) {
 
   for (const a of p.allocations) {
     const d = await db.document.findFirst({ where: { id: a.documentId, orgId: p.orgId, partyId: p.partyId } });
-    const kind = p.direction === "in" ? "invoice" : "bill";
-    if (!d || d.kind !== kind || !["issued", "posted", "partial"].includes(d.status)) throw new DocError("docs.badAllocation");
+    const kinds = p.direction === "in" ? ["invoice", "fee"] : ["bill"];
+    if (!d || !kinds.includes(d.kind) || !["issued", "posted", "partial"].includes(d.status)) throw new DocError("docs.badAllocation");
     if (a.amount > d.total - d.paid) throw new DocError("docs.overAllocated");
   }
 

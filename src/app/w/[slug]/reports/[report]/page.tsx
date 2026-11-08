@@ -13,7 +13,8 @@ export const metadata: Metadata = { title: "Report" };
 export default async function ReportPage({ params, searchParams }: PageProps<"/w/[slug]/reports/[report]">) {
   const { slug, report } = await params;
   if (!(REPORTS as readonly string[]).includes(report)) notFound();
-  const ws = await bizPage(slug, ["finance.view"]);
+  const ws = await bizPage(slug, ["finance.view"], ["business", "school"]);
+  if (ws.orgType === "school" && ["sales-by-customer", "sales-by-item", "stock-valuation"].includes(report)) notFound();
   await connection();
   const query = toQuery(await searchParams);
   const { locale, t } = await i18nFor(ws);

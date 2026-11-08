@@ -18,6 +18,8 @@ interface DemoAccount {
   avatarColor: string;
   workspace: "home" | "business" | "school";
   role: string;
+  /** The workspace this chip opens */
+  slug: string;
 }
 
 const typeIcon = { home: Home, business: Building2, school: GraduationCap };
@@ -29,11 +31,13 @@ export function LoginForm({ next, demo, allowSignup }: { next: string; demo: Dem
   const formRef = useRef<HTMLFormElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
+  const nextRef = useRef<HTMLInputElement>(null);
 
-  function signInAs(email: string) {
+  function signInAs(email: string, slug: string) {
     if (!emailRef.current || !passwordRef.current) return;
     emailRef.current.value = email;
     passwordRef.current.value = "demo1234";
+    if (nextRef.current && !next) nextRef.current.value = `/w/${slug}`;
     formRef.current?.requestSubmit();
   }
 
@@ -43,7 +47,7 @@ export function LoginForm({ next, demo, allowSignup }: { next: string; demo: Dem
       <p className="mt-2 text-muted">{t("auth.signInSubtitle")}</p>
 
       <form ref={formRef} action={action} className="mt-8 space-y-4" noValidate>
-        <input type="hidden" name="next" value={next} />
+        <input ref={nextRef} type="hidden" name="next" defaultValue={next} />
         <Field label={t("auth.email")} htmlFor="email">
           <Input ref={emailRef} id="email" name="email" type="email" autoComplete="email" dir="ltr" required defaultValue={state.values?.email} className="text-start" />
         </Field>
@@ -105,10 +109,10 @@ export function LoginForm({ next, demo, allowSignup }: { next: string; demo: Dem
               const name = locale === "ar" ? d.nameAr : d.name;
               return (
                 <motion.button
-                  key={d.email}
+                  key={`${d.email}-${d.workspace}`}
                   type="button"
                   disabled={pending}
-                  onClick={() => signInAs(d.email)}
+                  onClick={() => signInAs(d.email, d.slug)}
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.05 * i }}

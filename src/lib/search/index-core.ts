@@ -80,7 +80,7 @@ export async function indexMember(db: Db, membershipId: string) {
   });
 }
 
-const DOC_HREF: Record<string, string> = { quote: "sales/quotations", invoice: "sales/invoices", po: "purchases/orders", bill: "purchases/bills" };
+const DOC_HREF: Record<string, string> = { quote: "sales/quotations", invoice: "sales/invoices", po: "purchases/orders", bill: "purchases/bills", fee: "fees/invoices" };
 
 export async function indexParty(db: Db, id: string) {
   const p = await db.party.findUnique({ where: { id } });
@@ -132,6 +132,56 @@ export async function indexEmployee(db: Db, id: string) {
   });
 }
 
+export async function indexStudent(db: Db, id: string) {
+  const st = await db.student.findUnique({ where: { id }, include: { grade: true, section: true, guardians: { include: { guardian: true } } } });
+  if (!st || st.status === "graduated") return removeFromIndex(db, "student", id);
+  await upsert(db, {
+    orgId: st.orgId,
+    entityType: "student",
+    entityId: st.id,
+    title: `${st.name} · ${st.number}`,
+    subtitle: [st.grade.name, st.section?.name, st.status !== "active" ? st.status : null].filter(Boolean).join(" · "),
+    href: `students/${st.id}`,
+    parts: [st.nameAr, st.qid, ...st.guardians.flatMap((g) => [g.guardian.name, g.guardian.nameAr, g.guardian.phone])],
+    // Teachers find only students in their own classes.
+    restrictedTo: st.sectionId,
+  });
+}
+
+export async function indexGuardian(db: Db, id: string) {
+  const g = await db.guardian.findUnique({ where: { id }, include: { children: { include: { student: true } } } });
+  if (!g) return removeFromIndex(db, "guardian", id);
+  await upsert(db, {
+    orgId: g.orgId,
+    entityType: "guardian",
+    entityId: g.id,
+    title: g.name,
+    subtitle: g.children.map((c) => c.student.name.split(" ")[0]).join(", "),
+    href: `guardians/${g.id}`,
+    parts: [g.nameAr, g.phone, g.email, g.qid],
+  });
+}
+
+export async function indexApplication(db: Db, id: string) {
+  const a = await db.application.findUnique({ where: { id }, include: { grade: true } });
+  if (!a) return removeFromIndex(db, "application", id);
+  await upsert(db, {
+    orgId: a.orgId,
+    entityType: "application",
+    entityId: a.id,
+    title: `${a.childName} · ${a.number}`,
+    subtitle: `${a.grade.name} · ${a.stage}`,
+    href: `admissions?open=${a.id}`,
+    parts: [a.childNameAr, a.guardianName, a.guardianNameAr, a.guardianPhone, a.guardianEmail],
+  });
+}
+
+export async function indexBook(db: Db, id: string) {
+  const b = await db.book.findUnique({ where: { id } });
+  if (!b) return removeFromIndex(db, "book", id);
+  await upsert(db, { orgId: b.orgId, entityType: "book", entityId: b.id, title: b.title, subtitle: b.author, href: `library?book=${b.id}`, parts: [b.isbn, b.category] });
+}
+
 /** Rebuild the whole index for one workspace (seed, restore, duplicate). */
 export async function reindexOrg(db: Db, orgId: string) {
   await db.searchIndex.deleteMany({ where: { orgId } });
@@ -143,4 +193,8 @@ export async function reindexOrg(db: Db, orgId: string) {
   for (const i of await db.item.findMany({ where: { orgId, archived: false }, select: { id: true } })) await indexItem(db, i.id);
   for (const d of await db.document.findMany({ where: { orgId }, select: { id: true } })) await indexDocument(db, d.id);
   for (const e of await db.employee.findMany({ where: { orgId }, select: { id: true } })) await indexEmployee(db, e.id);
+  for (const st of await db.student.findMany({ where: { orgId }, select: { id: true } })) await indexStudent(db, st.id);
+  for (const g of await db.guardian.findMany({ where: { orgId }, select: { id: true } })) await indexGuardian(db, g.id);
+  for (const a of await db.application.findMany({ where: { orgId }, select: { id: true } })) await indexApplication(db, a.id);
+  for (const b of await db.book.findMany({ where: { orgId }, select: { id: true } })) await indexBook(db, b.id);
 }

@@ -9,7 +9,7 @@ import type { ExportDoc } from "./doc";
 // Printable quotations, invoices, purchase orders, supplier bills and
 // customer/supplier statements, in the reader's language and direction.
 
-const TITLES: Record<string, MessageKey> = { quote: "docs.quote", invoice: "docs.invoice", po: "docs.po", bill: "docs.bill" };
+const TITLES: Record<string, MessageKey> = { quote: "docs.quote", invoice: "docs.invoice", po: "docs.po", bill: "docs.bill", fee: "fees.feeInvoice" };
 
 const STYLE = `
 .doc-head { display:flex; justify-content:space-between; gap:24px; align-items:flex-start; padding-bottom:14px; border-bottom:2px solid var(--accent); }
@@ -62,7 +62,7 @@ export async function renderBusinessDocument(doc: ExportDoc, orgId: string, id: 
   const d = await db.document.findFirstOrThrow({ where: { id, orgId }, include: { party: true, lines: { orderBy: { sort: "asc" }, include: { item: { select: { sku: true, unit: true } } } } } });
   const { t, fmt, locale } = doc;
   const shown = displayStatus(d);
-  const sales = d.kind === "quote" || d.kind === "invoice";
+  const sales = d.kind === "quote" || d.kind === "invoice" || d.kind === "fee";
   const due = d.kind === "quote" ? t("docs.colValidUntil") : d.kind === "po" ? t("docs.colExpected") : t("docs.colDue");
   const discount = d.discount > 0;
   const row = (label: string, value: string, cls = "") => `<tr class="${cls}"><td>${esc(label)}</td><td>${value}</td></tr>`;
@@ -99,15 +99,15 @@ export async function renderBusinessDocument(doc: ExportDoc, orgId: string, id: 
     ${row(t("docs.subtotal"), esc(fmt.money(d.subtotal, { decimals: true })))}
     ${discount ? row(t("docs.discount"), `−${esc(fmt.money(d.discount, { decimals: true }))}`) : ""}
     ${row(t("docs.colTotal"), esc(fmt.money(d.total, { decimals: true })), "grand")}
-    ${(d.kind === "invoice" || d.kind === "bill") && d.paid > 0 ? row(t("docs.paidSoFar"), `−${esc(fmt.money(d.paid, { decimals: true }))}`) + row(t("docs.balanceDue"), esc(fmt.money(d.total - d.paid, { decimals: true })), "balance-row") : ""}
+    ${(d.kind === "invoice" || d.kind === "bill" || d.kind === "fee") && d.paid > 0 ? row(t("docs.paidSoFar"), `−${esc(fmt.money(d.paid, { decimals: true }))}`) + row(t("docs.balanceDue"), esc(fmt.money(d.total - d.paid, { decimals: true })), "balance-row") : ""}
   </table>
 </div>
 ${
-  d.notes || d.terms || (d.kind === "invoice" && bank.iban)
+  d.notes || d.terms || ((d.kind === "invoice" || d.kind === "fee") && bank.iban)
     ? `<div class="notes">
   ${d.notes ? `<div><h4>${esc(t("docs.notes"))}</h4>${esc(d.notes).replace(/\n/g, "<br>")}</div>` : ""}
   ${d.terms ? `<div><h4>${esc(t("docs.terms"))}</h4>${esc(d.terms).replace(/\n/g, "<br>")}</div>` : ""}
-  ${d.kind === "invoice" && bank.iban ? `<div><h4>${esc(t("docs.payTo"))}</h4>${esc(bank.bankName ?? "")}<br><span dir="ltr" style="font-family:ui-monospace,monospace">${esc(bank.iban)}</span></div>` : ""}
+  ${(d.kind === "invoice" || d.kind === "fee") && bank.iban ? `<div><h4>${esc(t("docs.payTo"))}</h4>${esc(bank.bankName ?? "")}<br><span dir="ltr" style="font-family:ui-monospace,monospace">${esc(bank.iban)}</span></div>` : ""}
 </div>`
     : ""
 }
@@ -119,7 +119,7 @@ ${
 export async function renderStatement(doc: ExportDoc, orgId: string, partyId: string, mode: "print" | "pdf") {
   const party = await db.party.findFirstOrThrow({ where: { id: partyId, orgId } });
   const customer = party.isCustomer;
-  const kind = customer ? "invoice" : "bill";
+  const kind = customer ? { in: ["invoice", "fee"] } : "bill";
   const [docs, payments] = await Promise.all([
     db.document.findMany({ where: { orgId, partyId, kind, status: { notIn: ["draft"] } }, orderBy: { date: "asc" } }),
     db.payment.findMany({ where: { orgId, partyId, direction: customer ? "in" : "out", voidedAt: null }, orderBy: { date: "asc" } }),

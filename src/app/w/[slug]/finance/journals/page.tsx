@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: "Journal entries" };
 
 export default async function JournalsPage({ params, searchParams }: PageProps<"/w/[slug]/finance/journals">) {
   const { slug } = await params;
-  const ws = await bizPage(slug, ["finance.view"]);
+  const ws = await bizPage(slug, ["finance.view"], ["business", "school"]);
   await connection();
   const query = toQuery(await searchParams);
   const { locale, t } = await i18nFor(ws);

@@ -13,6 +13,30 @@ export async function wipeAll(db: PrismaClient) {
   await db.attachment.deleteMany();
   await db.billPayment.deleteMany();
   await db.claim.deleteMany();
+  // Stage 3 tables (students and classes are referenced without cascades).
+  await db.loan.deleteMany();
+  await db.book.deleteMany();
+  await db.announcement.deleteMany();
+  await db.reportCard.deleteMany();
+  await db.mark.deleteMany();
+  await db.assessment.deleteMany();
+  await db.studentAttendance.deleteMany();
+  await db.attendanceRoll.deleteMany();
+  await db.application.deleteMany();
+  await db.studentGuardian.deleteMany();
+  await db.document.updateMany({ data: { studentId: null } });
+  await db.student.deleteMany();
+  await db.guardian.deleteMany();
+  await db.timetableSlot.deleteMany();
+  await db.teachingAssignment.deleteMany();
+  await db.section.deleteMany();
+  await db.busStop.deleteMany();
+  await db.busRoute.deleteMany();
+  await db.feeRate.deleteMany();
+  await db.subject.deleteMany();
+  await db.grade.deleteMany();
+  await db.term.deleteMany();
+  await db.academicYear.deleteMany();
   // Stage 2 tables, children before parents (some references don't cascade).
   await db.payslip.deleteMany();
   await db.payrollRun.deleteMany();

@@ -208,7 +208,7 @@ const docInput = z.object({
 });
 export type DocInput = z.input<typeof docInput>;
 
-const DOC_WORDS: Record<DocKind, [string, string]> = { quote: ["quotation", "عرض سعر"], invoice: ["invoice", "فاتورة"], po: ["purchase order", "أمر شراء"], bill: ["supplier bill", "فاتورة مورد"] };
+const DOC_WORDS: Record<DocKind, [string, string]> = { quote: ["quotation", "عرض سعر"], invoice: ["invoice", "فاتورة"], po: ["purchase order", "أمر شراء"], bill: ["supplier bill", "فاتورة مورد"], fee: ["fee invoice", "فاتورة رسوم"] };
 
 export async function saveDoc(slug: string, kind: DocKind, id: string | null, raw: DocInput): Promise<ActionResult<{ id: string; number: string }>> {
   return attempt(async () => {

@@ -26,6 +26,10 @@ export type AccountRole =
   | "sales"
   | "services"
   | "otherIncome"
+  | "tuition"
+  | "transportFees"
+  | "bookFees"
+  | "registrationFees"
   | "cogs"
   | "stockAdjust"
   | "salaries"
@@ -122,6 +126,52 @@ export async function ensureBusinessDefaults(db: Db, orgId: string) {
   const byCode = new Map(accounts.map((a) => [a.code, a.id]));
   await db.expenseCategory.createMany({
     data: BUSINESS_CLAIM_CATEGORIES.map((c, i) => ({ orgId, key: c.key, name: c.name, nameAr: c.nameAr, icon: c.icon, color: c.color, sort: i, accountId: byCode.get(c.account) ?? null })),
+  });
+}
+
+/** Extra accounts a school needs, and the names schools use for shared ones. */
+export const SCHOOL_ACCOUNTS: ChartRow[] = [
+  { code: "4110", name: "Tuition fees", nameAr: "الرسوم الدراسية", type: "income", role: "tuition" },
+  { code: "4120", name: "Transport fees", nameAr: "رسوم النقل", type: "income", role: "transportFees" },
+  { code: "4130", name: "Books & resources fees", nameAr: "رسوم الكتب والمصادر", type: "income", role: "bookFees" },
+  { code: "4140", name: "Registration & admission fees", nameAr: "رسوم التسجيل والقبول", type: "income", role: "registrationFees" },
+  { code: "4150", name: "Activities & trips", nameAr: "الأنشطة والرحلات", type: "income" },
+  { code: "6160", name: "Classroom & teaching resources", nameAr: "مستلزمات الفصول والتدريس", type: "expense" },
+  { code: "6170", name: "School bus running costs", nameAr: "تشغيل الحافلات المدرسية", type: "expense" },
+  { code: "6180", name: "Events & activities", nameAr: "الفعاليات والأنشطة", type: "expense" },
+];
+
+const SCHOOL_RENAMES: Record<string, { name: string; nameAr: string }> = {
+  "1200": { name: "Fees receivable", nameAr: "رسوم مستحقة على أولياء الأمور" },
+  "2400": { name: "Fees received in advance", nameAr: "رسوم مقبوضة مقدماً" },
+  "3100": { name: "Owners' capital", nameAr: "رأس مال الملاك" },
+};
+
+export const SCHOOL_CLAIM_CATEGORIES = [
+  { key: "classroom", name: "Classroom supplies", nameAr: "مستلزمات الفصول", icon: "pencil-ruler", color: "#8E5CC9", account: "6160" },
+  { key: "trips", name: "Trips & events", nameAr: "رحلات وفعاليات", icon: "party", color: "#D9644A", account: "6180" },
+  { key: "fuel", name: "Fuel & parking", nameAr: "الوقود والمواقف", icon: "fuel", color: "#5A6B7A", account: "6400" },
+  { key: "repairs", name: "Repairs", nameAr: "إصلاحات", icon: "wrench", color: "#B5541C", account: "6900" },
+  { key: "meals", name: "Hospitality", nameAr: "ضيافة", icon: "utensils", color: "#A86B00", account: "6650" },
+  { key: "office", name: "Office supplies", nameAr: "لوازم مكتبية", icon: "paperclip", color: "#2F7DB8", account: "6600" },
+  { key: "gov", name: "Government fees", nameAr: "رسوم حكومية", icon: "landmark", color: "#0B6E8A", account: "6800" },
+  { key: "other", name: "Other", nameAr: "أخرى", icon: "receipt", color: "#7A6E66", account: "6950" },
+] as const;
+
+/** Accounts and expense categories every school needs. Safe to call repeatedly. */
+export async function ensureSchoolLedger(db: Db, orgId: string) {
+  await ensureChart(db, orgId);
+  const have = new Set((await db.account.findMany({ where: { orgId }, select: { code: true } })).map((a) => a.code));
+  const missing = SCHOOL_ACCOUNTS.filter((a) => !have.has(a.code));
+  if (missing.length) {
+    await db.account.createMany({ data: missing.map((a) => ({ orgId, code: a.code, name: a.name, nameAr: a.nameAr, type: a.type, role: a.role ?? null, isSystem: !!a.role })) });
+  }
+  for (const [code, n] of Object.entries(SCHOOL_RENAMES)) await db.account.updateMany({ where: { orgId, code }, data: n });
+  if ((await db.expenseCategory.count({ where: { orgId } })) > 0) return;
+  const accounts = await db.account.findMany({ where: { orgId }, select: { id: true, code: true } });
+  const byCode = new Map(accounts.map((a) => [a.code, a.id]));
+  await db.expenseCategory.createMany({
+    data: SCHOOL_CLAIM_CATEGORIES.map((c, i) => ({ orgId, key: c.key, name: c.name, nameAr: c.nameAr, icon: c.icon, color: c.color, sort: i, accountId: byCode.get(c.account) ?? null })),
   });
 }
 
