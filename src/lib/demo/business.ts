@@ -499,6 +499,21 @@ export async function seedBusinessDemo(
       excess -= take;
     }
   }
+  // A toner restock is on its way: ordered two days ago, due later this week.
+  const ordered = weekday(new Date(now.getTime() - 2 * 86400_000));
+  const restock = await saveDocument(db, {
+    orgId,
+    kind: "po",
+    partyId: party.techno,
+    campusId: campuses.warehouse,
+    date: ordered,
+    dueDate: new Date(now.getTime() + 3 * 86400_000),
+    reference: "Urgent toner restock",
+    createdById: people.omar,
+    lines: ["TON-26A", "TON-EXV33", "INK-003-4"].map((sku) => ({ itemId: item[sku].id, description: item[sku].spec.name, qty: units(sku === "TON-26A" ? 30 : 12), unitPrice: q(item[sku].spec.cost) })),
+  });
+  await db.document.update({ where: { id: restock.id }, data: { status: "sent" } });
+
   stockAlerts.enabled = true;
   for (const it of Object.values(item)) await checkLowStock(db, orgId, it.id);
 

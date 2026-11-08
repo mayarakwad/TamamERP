@@ -10,6 +10,9 @@
 | ![Arabic, dark mode](docs/screenshots/home-dashboard-ar-dark.jpg) | ![Appearance settings](docs/screenshots/appearance.jpg) |
 | ![Claims](docs/screenshots/claims.jpg) | ![A claim with its receipt and comment thread](docs/screenshots/claim-detail.jpg) |
 | ![Budgets in Arabic](docs/screenshots/budgets-ar.jpg) | ![Bills in Arabic](docs/screenshots/bills-ar.jpg) |
+| ![Business dashboard](docs/screenshots/biz-dashboard.jpg) | ![Business dashboard in Arabic](docs/screenshots/biz-dashboard-ar.jpg) |
+| ![An invoice](docs/screenshots/invoice.jpg) | ![An invoice in Arabic](docs/screenshots/invoice-ar.jpg) |
+| ![Payroll with WPS check](docs/screenshots/payroll-run.jpg) | ![Profit and loss](docs/screenshots/profit-and-loss.jpg) |
 
 ## Install
 
@@ -64,8 +67,10 @@ After `npm run setup:demo`, open <http://localhost:3000> and click any account u
 |---|---|---|---|
 | Hessa Al-Mansouri | Al-Mansouri Home | Owner | The Home dashboard: 5 claims waiting (approve one), a busy grocery week, dining over budget, bills due this week, a TV warranty ending soon. Every page under **Settings**. She's also a **parent** at Al Manara (try the workspace switcher). |
 | Maria Santos | Al-Mansouri Home | Family member | The family-member view: new claim from a phone, her own claims and their comment threads, no admin pages. Search only finds her own claims. |
-| Khalid Al-Mansouri | Sadeem (business) + Home | Owner / Admin | One login, two workspaces. |
-| Priya Nair | Sadeem | Accountant | The business layout and navigation. |
+| Khalid Al-Mansouri | Sadeem (business) + Home | Owner / Admin | One login, two workspaces. At Sadeem: the business dashboard, a year of sales, purchases and payroll, every report. |
+| Priya Nair | Sadeem | Accountant | Invoices, payments, supplier bills, journals and reports. She prepares payroll; an admin approves it. |
+| Omar Haddad | Sadeem | Admin | Approves leave, expense claims and payroll. Sign in with `omar@tamam.demo`. |
+| Joseph Mathew | Sadeem | Employee + stock access | The storekeeper: checks in from his phone, receives deliveries, counts stock, sees no sales or prices. Sign in with `joseph@tamam.demo`. |
 | Dr. Fatima Al-Sulaiti | Al Manara International School | Owner | The school group with three campuses. |
 | Aisha Rahman | Al Manara | Teacher | Teachers only see their own classes' pages. |
 
@@ -82,8 +87,8 @@ After `npm run setup:demo`, open <http://localhost:3000> and click any account u
 | `npm run reset:fresh` | Wipe everything and return to the setup wizard (asks first) |
 | `npm run db:seed` | Reset the demo data |
 | `npm run db:migrate` | Create a migration after editing `prisma/schema.prisma` |
-| `npm test` | Unit tests: formatting, money, permissions, preferences, setup key, CSV and filename safety |
-| `npm run test:e2e` | Browser tests: setup wizard, sign-in, roles, Arabic, signup, lockout, claims from submit to approval, exports, share links, search, notifications, invitations, backups. On a new machine, run `npx playwright install chromium` first |
+| `npm test` | Unit tests: formatting, money, permissions, preferences, setup key, CSV and filename safety, document maths, amounts in words (English and Arabic), IBANs, payroll and the WPS file |
+| `npm run test:e2e` | Browser tests: setup wizard, sign-in, roles, Arabic, signup, lockout, claims, exports, share links, search, notifications, invitations, backups; and for businesses: invoicing and payments, quote to invoice, receiving and billing, storekeeper access, payroll and WPS, leave, balanced statements, backup of a business. On a new machine, run `npx playwright install chromium` first |
 | `npm run lint` | ESLint |
 | `npm run typecheck` | TypeScript check |
 
@@ -166,6 +171,35 @@ After `npm run setup:demo`, open <http://localhost:3000> and click any account u
   - **Restore** either as a new workspace or over this one. Replacing asks you to type the workspace name, and saves a safety copy first.
   - **Duplicate** the workspace as a sandbox (everything, clearly marked "Sandbox") or a fresh start (setup only, no records), for example a new school year.
 
+### Stage 2 · Business
+
+**Sales and purchases**
+- **Customers and suppliers** (one record can be both) with contacts, CR number, payment terms and a credit limit. Each has a page with what they owe or are owed, what's overdue, twelve months of sales or purchases as a chart, their documents, payments and a printable **statement** with a running balance.
+- **Quotations → invoices → payments.** One editor for quotations, invoices, purchase orders and supplier bills: pick or add the customer inline, add items from a searchable list (stock shown as you type, with a warning when there isn't enough), discounts per line, totals and the amount in words as you go. A quotation converts to an invoice in one click. Issuing an invoice takes the stock out and posts the sale, cost of sales and receivable.
+- **Purchase orders → receiving → supplier bills → payments.** Orders are received into a warehouse, partly or in full. "Create bill" makes a bill for exactly what arrived, at the ordered prices. Bills without an order can book straight to an expense account (rent, Kahramaa, Ooredoo).
+- **Payments** received or made, applied to open documents (oldest first, or the one you opened it from), with any rest kept as credit. Voiding a payment reopens what it paid.
+- **Printed documents**: invoices, quotations, orders and bills print and download as PDF with logo, CR number, both dates (Gregorian and Hijri), the amount in words in English or Arabic (e.g. «فقط ثمانية آلاف وثمانمئة وأربعة وثلاثون ريالاً قطرياً لا غير»), bank details and signature lines.
+
+**Inventory**
+- Items (products and services) with SKU, units, prices, moving-average cost and reorder levels. Stock per warehouse (a business's branches are its warehouses), every movement in and out, **stock counts** that book the difference, and **transfers** between warehouses.
+- **Low-stock alerts** go to everyone who looks after stock, once per dip below the reorder level.
+
+**People**
+- **Employees** with QID, passport and visa numbers, expiry badges and reminders 30 days before a QID or passport expires; pay broken into basic and allowances; IBAN checked as you type (and the bank recognised from it); an end-of-service **gratuity estimate** (three weeks' basic pay per year, Labour Law art. 54) and annual leave balance (21 days, 28 after five years).
+- **Attendance**: a month grid for HR (click a day to correct it), and a **check-in / check-out** button for anyone whose login is linked to their employee record. Late after 08:10; overtime counted after nine hours.
+- **Leave**: requests (annual, sick, unpaid, emergency, maternity, Hajj) counted in working days, with balances, approval or decline with a reason, and approved leave marked on the attendance sheet.
+- **Expense claims** for business staff use the same claim screens as households; approving books the expense to its account, reimbursing pays it from the bank.
+- **Payroll**: one click builds the month's payslips from salaries, absences, unpaid leave and overtime (125% of the basic hourly rate). Adjust bonuses, advance repayments and other deductions; an owner or admin approves (salaries, allowances and deductions are booked), then it's marked paid. Employees see their payslips under **My payslips**.
+- **WPS salary file**: the CSV the bank uploads to Qatar's Wage Protection System, built to the published file format (header, record layout, field types, `SIF_<EID>_<BANK>_<YYYYMMDD>_<HHMM>.csv`, deduction reason codes). Every run shows a check that lists anything the bank would reject (missing QID, a name with one part, a wrong IBAN, deductions without a reason code). Staff paid in cash are left out, with a note saying so.
+
+**Accounting and reports**
+- A **double-entry ledger** behind everything: invoices, payments, bills, receipts, stock counts, approved claims and payroll each post a balanced journal entry automatically, and nothing that doesn't balance can be saved. Starts with a chart of accounts suited to a Qatari trading company.
+- **Chart of accounts** with live balances, **journal entries** (manual entries for opening balances, depreciation and corrections, which can be reversed), and an **account ledger** for any account.
+- **Reports**: profit & loss (compared with the period before), balance sheet, cash flow (direct method: customers, suppliers, salaries, claims, other), trial balance, receivables and payables aging, sales by customer, sales by item with margin, and stock valuation. Each has period shortcuts (this month, last month, quarter, year to date, last year, custom), and downloads, prints and shares like every other table, with headings and totals kept bold in Excel, Word and PDF.
+- **The business dashboard**: a morning briefing (overdue invoices, money in since yesterday, low stock, expiring documents, payroll not yet prepared), what's waiting for you, key numbers that count up, twelve months of sales and cash in/out, top customers, low stock and the people panel. An employee sees their own day instead: check-in, leave left, last payslip.
+
+**Extra access on top of a role.** An owner or admin can give one person a single extra permission (stock, finance view, approving claims or leave, HR view) without changing their role. The demo storekeeper is an employee with stock access.
+
 **How the exports were checked:** each format was downloaded and opened, not just generated. Excel files were read back cell by cell (direction, number types, formats, formulas). Excel and Word files were opened in LibreOffice and rendered to images to check Arabic letter shaping, right-to-left order and page numbers. PDFs and the print layout were checked the same way in Chromium.
 
 ## Roadmap
@@ -174,7 +208,7 @@ After `npm run setup:demo`, open <http://localhost:3000> and click any account u
 |---|---|
 | ~~1a · Foundations~~ | Done |
 | ~~1b · Home~~ | Done |
-| **2 · Business** | Customers, quotations → invoices → payments; purchase orders → receiving → supplier bills; inventory with low-stock alerts; expenses; HR (employees, attendance, leave, payroll, WPS salary file); a double-entry ledger behind profit & loss, cash flow, balance sheet and aging reports. |
+| ~~2 · Business~~ | Done |
 | **3 · School** | Admissions board, students and guardians, staff, classes and timetable, attendance, exams, gradebook and report cards, fees with installments, bus routes, library, parent view, and side-by-side campuses. |
 | **4 · Flow** | The AI assistant, using each organization's own key (encrypted on the server), with provider and model choice, usage tracking and a spending limit. It reads freely and proposes changes you confirm with one click. |
 
@@ -201,11 +235,17 @@ src/app/actions/            Server actions (claims, comments, home, members, wor
 src/app/api/w/[slug]/       File routes: export, attachments, logo, backup, restore, search, notifications
 src/app/s/[token]/          Public view-only share pages
 src/app/invite/[token]/     Accept an invitation (sign in or create an account)
-src/lib/datasets/           One definition per table: the page, every download, copy and share use it
-src/lib/export/             Excel, CSV, Word, PDF, print and claim voucher writers
+src/lib/datasets/           One definition per table or report: the page, every download, copy and share use it
+src/lib/export/             Excel, CSV, Word, PDF, print, claim vouchers, business documents, statements, payslips
+src/lib/ledger/             Chart of accounts, balanced posting and reversals, financial statements
+src/lib/docs/               Document maths and what happens when a document changes state (with its postings)
+src/lib/inventory/          Stock movements, moving-average cost, low-stock alerts
+src/lib/hr/, payroll/       Working days, leave balances, payslip maths, payroll runs, IBANs, the WPS file
+src/lib/words.ts            Amounts in words, English and Arabic
+src/app/w/[slug]/_biz/      Shared server pages for the business modules
 src/lib/backup/             Backup file format, restore with id remapping, duplicate
 src/lib/search/             Search index with Arabic normalization
-src/lib/demo/               Demo workspaces, generated receipt photos and logos
+src/lib/demo/               Demo workspaces (a year of trading, staff and payroll for Sadeem), receipt photos and logos
 src/components/             Shell, dashboard widgets, data table and toolbar, record threads, UI primitives
 tests/                      Vitest unit tests and Playwright end-to-end tests
 ```
@@ -241,4 +281,11 @@ Tamam needs a normal Node server, for example Docker on a VPS. It doesn't suit s
 - **Paid bills count against budgets**, so the budget shows the whole month, not just claims.
 - **Safety copy before a replace-restore**, kept in `storage/safety-backups`.
 - **Sandbox duplicates** are marked with a banner so nobody mistakes them for the real workspace.
+- **Amounts in words in Arabic and English** on invoices and payslips, with the right Arabic counted-noun forms (ريالان، ريالات، ريالاً).
+- **A WPS check on every payroll run**, so problems show up before the bank rejects the file.
+- **Gratuity estimate** on each employee, and **document expiry reminders** for QIDs and passports.
+- **Self check-in** from the phone for staff with a login.
+- **Customer statements** with a running balance, and **credit-limit warnings** while invoicing.
+- **Extra permissions per person** on top of their role (e.g. a storekeeper with stock access).
+- **A believable demo business**: a year of Sadeem's trading (office fit-outs ordered back-to-back from the furniture supplier, a slow-paying logistics customer, rent, Kahramaa and Ooredoo bills, an 8% price rise), 15 staff from eight countries (one new arrival paid on a visa number, one paid in cash), and books that balance to the dirham.
 - **Generated receipt photos** in the demo (crumpled paper, real Doha shops, an Arabic thank-you line), so the claims pages look lived-in without stock images.

@@ -58,7 +58,7 @@ export async function seedWorkspaces(db: Db, passwordHash: string, now = new Dat
       nameAr: "بيت المنصوري",
       slug: "al-mansouri-home",
       address: "Villa 14, Street 912, Zone 55, Al Waab, Doha",
-      addressAr: "فيلا ١٤، شارع ٩١٢، منطقة ٥٥، الوعب، الدوحة",
+      addressAr: "فيلا 14، شارع 912، منطقة 55، الوعب، الدوحة",
     },
   });
   await db.membership.createMany({
@@ -79,7 +79,7 @@ export async function seedWorkspaces(db: Db, passwordHash: string, now = new Dat
       nameAr: "سديم للوازم المكاتب والمنازل ذ.م.م",
       slug: "sadeem",
       address: "Building 45, Street 230, Zone 43, Salwa Road, Doha",
-      addressAr: "مبنى ٤٥، شارع ٢٣٠، منطقة ٤٣، طريق سلوى، الدوحة",
+      addressAr: "مبنى 45، شارع 230، منطقة 43، طريق سلوى، الدوحة",
       phone: "+974 4455 2030",
       email: "accounts@sadeem.example",
       crNumber: "148392",
@@ -118,7 +118,7 @@ export async function seedWorkspaces(db: Db, passwordHash: string, now = new Dat
       nameAr: "مدرسة المنارة الدولية",
       slug: "al-manara",
       address: "Group office, Building 8, Street 340, Zone 52, Al Waab, Doha",
-      addressAr: "مكتب المجموعة، مبنى ٨، شارع ٣٤٠، منطقة ٥٢، الوعب، الدوحة",
+      addressAr: "مكتب المجموعة، مبنى 8، شارع 340، منطقة 52، الوعب، الدوحة",
       phone: "+974 4400 8800",
       email: "info@almanara.example",
       brandColor: "#4B3FA8",

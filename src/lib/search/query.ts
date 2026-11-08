@@ -23,8 +23,11 @@ export async function searchRecords(ws: Viewer, slug: string, query: string): Pr
   const rows = await db.searchIndex.findMany({
     where: { orgId: ws.org.id, AND: terms.map((t) => ({ text: { contains: t } })) },
     orderBy: { updatedAt: "desc" },
-    take: 60,
+    take: 300,
   });
+  // People, customers and items before documents; no single type floods the list.
+  const PRIORITY: Record<string, number> = { party: 0, employee: 1, item: 2, member: 3, possession: 4, bill: 5, claim: 6, document: 7 };
+  const perType = new Map<string, number>();
   return rows
     .filter((r) => {
       if (r.entityType === "claim") return ws.can("claims.viewAll") || r.restrictedTo === ws.viewer.id;
@@ -34,6 +37,12 @@ export async function searchRecords(ws: Viewer, slug: string, query: string): Pr
       if (r.entityType === "document") return ws.can("finance.view") || (r.restrictedTo === "po" && ws.can("inventory.manage"));
       if (r.entityType === "employee") return ws.can("hr.view");
       return true;
+    })
+    .sort((a, b) => (PRIORITY[a.entityType] ?? 9) - (PRIORITY[b.entityType] ?? 9))
+    .filter((r) => {
+      const n = (perType.get(r.entityType) ?? 0) + 1;
+      perType.set(r.entityType, n);
+      return n <= 8;
     })
     .slice(0, 20)
     .map((r) => ({ type: r.entityType, title: r.title, subtitle: r.subtitle, href: `/w/${slug}/${r.href}` }));
