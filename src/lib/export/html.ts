@@ -64,6 +64,9 @@ tr { break-inside: avoid; }
 th { background: ${accent}; color: #fff; font-weight: 600; font-size: 8.5pt; text-align: start; padding: 6px 8px; }
 td { padding: 5px 8px; border-bottom: 1px solid #ece5de; vertical-align: top; }
 tbody tr:nth-child(even) td { background: #faf8f6; }
+tr.em-heading td { font-weight: 600; background: #f3efec !important; padding-top: 8px; }
+tr.em-subtotal td { font-weight: 600; border-top: 1px solid #cfc6bd; }
+tr.em-total td { font-weight: 700; border-top: 2px solid ${accent}; background: #f6f2ee !important; }
 .num { text-align: end; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .nowrap { white-space: nowrap; }
 tfoot td { font-weight: 600; background: #f3efec; border-top: 2px solid ${accent}; border-bottom: 0; }
@@ -92,7 +95,7 @@ export function renderTableHtml(doc: ExportDoc, mode: "print" | "pdf"): string {
   const cols = doc.columns;
   const cls = (c: (typeof cols)[number]) => (isNumeric(c) ? "num" : c.type === "date" || c.type === "enum" ? "nowrap" : "");
   const thead = `<thead><tr>${cols.map((c) => `<th class="${isNumeric(c) ? "num" : ""}">${esc(columnLabel(c, doc.t))}</th>`).join("")}</tr></thead>`;
-  const tbody = `<tbody>${doc.rows.map((r) => `<tr>${cols.map((c) => `<td class="${cls(c)}">${esc(formatCell(c, r.cells[c.key], doc.fmt, doc.t))}</td>`).join("")}</tr>`).join("")}</tbody>`;
+  const tbody = `<tbody>${doc.rows.map((r) => `<tr${r.emphasis ? ` class="em-${r.emphasis}"` : ""}>${cols.map((c) => `<td class="${cls(c)}">${esc(formatCell(c, r.cells[c.key], doc.fmt, doc.t))}</td>`).join("")}</tr>`).join("")}</tbody>`;
   const tfoot = Object.keys(doc.totals).length
     ? `<tfoot><tr>${cols
         .map((c, i) => `<td class="${cls(c)}">${i === 0 ? esc(`${doc.t("toolbar.total")} · ${doc.t("toolbar.rows", { count: doc.fmt.number(doc.rows.length) })}`) : c.total ? esc(formatCell(c, doc.totals[c.key], doc.fmt, doc.t)) : ""}</td>`)

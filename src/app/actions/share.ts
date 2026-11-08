@@ -43,7 +43,7 @@ export async function createShareLink(
     title: result.title,
     subtitle: result.subtitle,
     columns: result.columns,
-    rows: result.rows.map((r) => ({ id: r.id, cells: r.cells })),
+    rows: result.rows.map((r) => ({ id: r.id, cells: r.cells, ...(r.emphasis ? { emphasis: r.emphasis } : {}) })),
     org: { name: brand.name, nameAr: brand.nameAr, logo: brand.logo, brandColor: brand.brandColor, currency: brand.currency, timezone: brand.timezone, address: locale === "ar" ? (brand.addressAr ?? brand.address) : brand.address },
     locale,
     digits: ws.viewer.prefs.digits,

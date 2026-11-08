@@ -8,6 +8,8 @@ import { pick } from "@/lib/i18n";
 import { getI18n } from "@/lib/i18n/server";
 import { HomeDashboard } from "@/components/dashboard/home-dashboard";
 import { WorkspaceDashboard } from "@/components/dashboard/workspace-dashboard";
+import { BusinessDashboard } from "@/components/dashboard/business-dashboard";
+import { getBizDashboard } from "@/lib/biz-dashboard";
 import type { DashboardLayout } from "@/app/actions/dashboard";
 import type { Role } from "@/lib/rbac";
 
@@ -31,6 +33,11 @@ export default async function DashboardPage({ params }: PageProps<"/w/[slug]">) 
     );
   }
 
+  if (ws.orgType === "business") {
+    const data = await getBizDashboard(ws, now);
+    return <BusinessDashboard slug={slug} data={data} now={now.toISOString()} greeting={greeting} firstName={firstName} layout={layout} />;
+  }
+
   const [campuses, members] = await Promise.all([
     db.campus.findMany({ where: { orgId: ws.org.id }, orderBy: { name: "asc" }, include: { _count: { select: { memberships: true } } } }),
     db.membership.findMany({ where: { orgId: ws.org.id, status: "active" }, include: { user: true }, orderBy: { createdAt: "asc" }, take: 8 }),
@@ -41,7 +48,7 @@ export default async function DashboardPage({ params }: PageProps<"/w/[slug]">) 
       slug={slug}
       orgType={ws.orgType}
       role={ws.role}
-      stage={ws.orgType === "business" ? "2" : "3"}
+      stage="3"
       now={now.toISOString()}
       greeting={greeting}
       firstName={firstName}

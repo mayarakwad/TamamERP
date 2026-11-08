@@ -68,7 +68,12 @@ export function DataTable({ slug, result, renderCell = {}, mobileRow, empty }: D
           </thead>
           <tbody className="divide-y divide-line">
             {rows.slice(0, shown).map((row) => (
-              <tr key={row.id} onClick={() => go(row)} className={cn("transition-colors", row.href && "cursor-pointer hover:bg-accent-soft/40")} style={{ height: "var(--row)" }}>
+              <tr
+                key={row.id}
+                onClick={() => go(row)}
+                className={cn("transition-colors", row.href && "cursor-pointer hover:bg-accent-soft/40", row.emphasis === "heading" && "bg-sunken/70 font-semibold", row.emphasis === "subtotal" && "font-semibold", row.emphasis === "total" && "border-t-2 border-line bg-sunken/60 font-bold")}
+                style={{ height: "var(--row)" }}
+              >
                 {result.columns.map((c, i) => (
                   <td key={c.key} className={cn("px-4 py-2", numeric(c) && "tabular text-end", (i === 0 || numeric(c) || c.type === "date" || c.type === "enum") && "whitespace-nowrap", c.hideOnMobile && "hidden lg:table-cell")}>
                     {i === 0 && row.href ? (

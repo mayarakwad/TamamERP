@@ -20,7 +20,7 @@ export interface ExportDoc {
   title: string;
   subtitle?: string;
   columns: Column[];
-  rows: Pick<Row, "id" | "cells">[];
+  rows: Pick<Row, "id" | "cells" | "emphasis">[];
   totals: Record<string, number>;
   brand: ExportBrand;
   locale: "en" | "ar";
@@ -37,7 +37,7 @@ export function makeDoc(input: {
   title: string;
   subtitle?: string;
   columns: Column[];
-  rows: Pick<Row, "id" | "cells">[];
+  rows: Pick<Row, "id" | "cells" | "emphasis">[];
   brand: ExportBrand;
   locale: "en" | "ar";
   digits: "latn" | "arab";

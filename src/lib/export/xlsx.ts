@@ -111,10 +111,12 @@ export async function renderXlsx(doc: ExportDoc): Promise<Buffer> {
         if (c.type === "number") cell.numFmt = "#,##0.##";
         if (c.type === "percent") cell.numFmt = "0.0%";
       }
-      cell.font = { name: FONT, size: 10 };
+      cell.font = { name: FONT, size: 10, bold: !!r.emphasis };
       cell.alignment = align(c);
-      if (ri % 2 === 1) cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFAF8F6" } };
-      cell.border = { bottom: { style: "hair", color: { argb: "FFE6DED6" } } };
+      if (r.emphasis === "heading" || r.emphasis === "total") cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF3EFEC" } };
+      else if (ri % 2 === 1) cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFAF8F6" } };
+      if (r.emphasis === "total" || r.emphasis === "subtotal") cell.border = { top: { style: r.emphasis === "total" ? "medium" : "thin", color: { argb: "FF8A7F76" } }, bottom: { style: "hair", color: { argb: "FFE6DED6" } } };
+      if (!r.emphasis || r.emphasis === "heading") cell.border = { bottom: { style: "hair", color: { argb: "FFE6DED6" } } };
     });
   });
 

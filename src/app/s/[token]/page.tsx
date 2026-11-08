@@ -84,7 +84,7 @@ export default async function SharedPage({ params }: PageProps<"/s/[token]">) {
           </thead>
           <tbody className="divide-y divide-line">
             {doc.rows.map((r) => (
-              <tr key={r.id} className="even:bg-sunken/40">
+              <tr key={r.id} className={r.emphasis === "heading" ? "bg-sunken/70 font-semibold" : r.emphasis === "total" ? "border-t-2 border-line bg-sunken/60 font-bold" : r.emphasis === "subtotal" ? "font-semibold" : "even:bg-sunken/40"}>
                 {doc.columns.map((c) => (
                   <td key={c.key} className={`px-4 py-2 ${isNumeric(c) ? "tabular text-end whitespace-nowrap" : ""}`}>
                     {formatCell(c, r.cells[c.key], fmt, t)}

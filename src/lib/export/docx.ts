@@ -63,11 +63,11 @@ export async function renderDocx(doc: ExportDoc): Promise<Buffer> {
         children: doc.columns.map(
           (c) =>
             new TableCell({
-              shading: i % 2 ? { type: ShadingType.CLEAR, fill: "FAF8F6", color: "auto" } : undefined,
+              shading: r.emphasis === "heading" || r.emphasis === "total" ? { type: ShadingType.CLEAR, fill: "F3EFEC", color: "auto" } : i % 2 ? { type: ShadingType.CLEAR, fill: "FAF8F6", color: "auto" } : undefined,
               verticalAlign: VerticalAlign.CENTER,
               margins: { top: 60, bottom: 60, left: 100, right: 100 },
               borders: cellBorders,
-              children: [para([run(formatCell(c, r.cells[c.key], doc.fmt, doc.t))], { align: isNumeric(c) ? AlignmentType.END : AlignmentType.START })],
+              children: [para([run(formatCell(c, r.cells[c.key], doc.fmt, doc.t), r.emphasis ? { bold: true } : {})], { align: isNumeric(c) ? AlignmentType.END : AlignmentType.START })],
             }),
         ),
       }),
