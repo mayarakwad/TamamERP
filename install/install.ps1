@@ -72,16 +72,15 @@ npm ci --no-audit --no-fund --loglevel=error
 if ($LASTEXITCODE -ne 0) { Fail "npm ci failed (see above)." }
 Ok "Dependencies installed"
 
-# 4. A local install is opened at http://localhost, so session cookies can't require HTTPS.
-if (-not (Test-Path ".env")) { Copy-Item ".env.example" ".env" }
-$envText = Get-Content ".env" -Raw
-if ($envText -notmatch "(?m)^INSECURE_COOKIES=") { Add-Content ".env" "`n# Local install: the app is opened over http://localhost. Remove this line when serving over HTTPS.`nINSECURE_COOKIES=1" }
-if ($envText -notmatch "(?m)^PORT=") { Add-Content ".env" "PORT=$Port" }
-
-# 5. Secret, folders, database, and the setup key or demo data
+# 4. Secret, folders, database, and the setup key or demo data
 Step "Preparing Tamam"
 npm run --silent setup -- "--$Mode"
 if ($LASTEXITCODE -ne 0) { Fail "Setup failed (see above)." }
+
+# 5. A local install is opened at http://localhost, so session cookies can't require HTTPS.
+$envText = Get-Content ".env" -Raw
+if ($envText -notmatch "(?m)^INSECURE_COOKIES=") { Add-Content ".env" "`n# Local install: the app is opened over http://localhost. Remove this line when serving over HTTPS.`nINSECURE_COOKIES=1" }
+if ($envText -notmatch "(?m)^PORT=") { Add-Content ".env" "PORT=$Port" }
 
 # 6. The browser used to make Arabic PDFs (optional)
 if (-not $NoPdf) {

@@ -39,8 +39,13 @@ async function main() {
 
   // 2. .env with a real secret
   if (!existsSync(".env")) {
-    copyFileSync(".env.example", ".env");
-    ok("Created .env from .env.example");
+    if (existsSync(".env.example")) {
+      copyFileSync(".env.example", ".env");
+      ok("Created .env from .env.example");
+    } else {
+      writeFileSync(".env", 'DATABASE_URL="file:./data/tamam.db"\nAPP_SECRET=""\nSTORAGE_DIR="./storage"\n');
+      ok("Created .env");
+    }
   }
   let env = readFileSync(".env", "utf8");
   const secret = env.match(/^APP_SECRET="?([^"\n]*)"?/m)?.[1] ?? "";

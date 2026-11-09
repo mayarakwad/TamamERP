@@ -90,16 +90,15 @@ step "Installing (this takes a few minutes the first time)"
 npm ci --no-audit --no-fund --loglevel=error
 ok "Dependencies installed"
 
-# 4. A local install is opened at http://localhost, so session cookies can't require HTTPS.
-if [ ! -f .env ]; then cp .env.example .env; fi
+# 4. Secret, folders, database, and the setup key or demo data
+step "Preparing Tamam"
+npm run --silent setup -- "--$MODE"
+
+# 5. A local install is opened at http://localhost, so session cookies can't require HTTPS.
 if ! grep -q '^INSECURE_COOKIES=' .env; then
   printf '\n# Local install: the app is opened over http://localhost. Remove this line when serving over HTTPS.\nINSECURE_COOKIES=1\n' >> .env
 fi
 if ! grep -q '^PORT=' .env; then printf 'PORT=%s\n' "$PORT" >> .env; fi
-
-# 5. Secret, folders, database, and the setup key or demo data
-step "Preparing Tamam"
-npm run --silent setup -- "--$MODE"
 
 # 6. The browser used to make Arabic PDFs (optional)
 if [ "$PDF" = "1" ]; then
