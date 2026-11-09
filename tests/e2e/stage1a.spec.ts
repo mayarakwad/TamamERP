@@ -59,8 +59,10 @@ test("signup builds a new Home workspace with friendly empty states", async ({ p
   await page.locator("#email").fill(`test${Date.now()}@example.com`);
   await page.locator("#password").fill("Doha-2026-pearl");
   await page.getByRole("button", { name: /Create workspace/ }).click();
-  await page.waitForURL(/\/w\/test-family-home/);
-  await expect(page.getByText(/No bills yet/)).toBeVisible();
+  await page.waitForURL(/\/w\/test-family-home\/welcome/);
+  await expect(page.getByRole("heading", { name: "Set up Test Family Home" })).toBeVisible();
+  await page.getByRole("link", { name: "I'll finish later" }).click();
+  await expect(page.getByText(/No bills yet/)).toBeVisible({ timeout: 30_000 });
 });
 
 test("too many wrong passwords lock the account for 15 minutes", async ({ page }) => {

@@ -26,6 +26,44 @@
 
 ## Install
 
+### The quick way
+
+**macOS or Linux:** open a terminal and run:
+
+```bash
+curl -fsSL https://github.com/mayarakwad/TamamERP/releases/latest/download/install.sh | bash
+```
+
+**Windows:** open PowerShell and run:
+
+```powershell
+irm https://github.com/mayarakwad/TamamERP/releases/latest/download/install.ps1 | iex
+```
+
+The installer checks for Node.js 22 or newer (and tells you where to get it if it's missing). It then:
+
+1. Downloads the latest release into a `tamam` folder.
+2. Installs everything and prepares the database.
+3. Downloads the browser used for PDFs.
+4. Builds the app, starts it and opens your browser at the setup wizard.
+
+Add `--demo` (Windows: `-Demo`) to start with the demo workspaces instead. Other options: `--dir`, `--port`, `--no-pdf`, `--no-start` (`bash install.sh --help` lists them). To start Tamam again later: `cd tamam && npm start`.
+
+### On a server, with Docker
+
+```bash
+git clone https://github.com/mayarakwad/TamamERP.git tamam && cd tamam
+docker compose up -d
+docker compose logs tamam     # shows the setup link with its one-time key
+```
+
+- **Data:** the database and uploads are kept in two Docker volumes.
+- **Secret:** a secret is generated on first start and saved with the data. Back it up with the database, because saved AI keys can't be read without it.
+- **Demo:** set `TAMAM_DEMO: "1"` in `docker-compose.yml` to start with the demo.
+- **HTTPS:** put Tamam behind HTTPS (e.g. Caddy or nginx) before real use.
+
+### By hand
+
 You need **Node.js 22 or newer**.
 
 ```bash
@@ -69,6 +107,23 @@ To try the wizard again on a test machine, run `npm run reset:fresh`. It deletes
 |---|---|
 | ![Setup wizard in Arabic](docs/screenshots/setup-welcome-ar.jpg) | ![Workspace step](docs/screenshots/setup-workspace.jpg) |
 
+### Setting up a new workspace
+
+A new workspace opens a **setup guide**, with different steps for each kind of workspace:
+
+| Workspace | Steps |
+|---|---|
+| **Business** | Name, logo and brand colour; branches and warehouses; bank details and terms printed on invoices (the IBAN is checked); products and customers; employees and payroll; inviting people; connecting Flow |
+| **School** | School details; campuses; school year, timetable and grading; fee structure; staff and classes; online applications (open or close them, copy the link); inviting people; Flow |
+| **Home** | Name and colour; monthly budgets (typical amounts for a Doha family are filled in to adjust); recurring bills from one-tap presets (Kahramaa, mobile and internet, rent, the helper's salary, school fees); things you own; inviting family; Flow |
+
+How it behaves:
+
+- **Progress comes from the data where possible:** "Products and customers" is done once there are items and customers. Steps the data can't confirm are done with "Looks right".
+- **Every step can be skipped.** "I'll finish later" goes to the dashboard, which shows a "Finish setting up" card with the progress until the guide is done or the card is hidden.
+- **The guide stays available** under Settings → Setup guide.
+- **Branches and campuses can be added or renamed here**, which wasn't possible after signup before.
+
 ### The demo
 
 After `npm run setup:demo`, open <http://localhost:3000> and click any account under **Explore the demo**. Every demo account uses the password `demo1234`.
@@ -104,7 +159,7 @@ After `npm run setup:demo`, open <http://localhost:3000> and click any account u
 | `npm run db:seed` | Reset the demo data |
 | `npm run db:migrate` | Create a migration after editing `prisma/schema.prisma` |
 | `npm test` | Unit tests: formatting, money, permissions, preferences, setup key, CSV and filename safety, document maths, amounts in words (English and Arabic), IBANs, payroll and the WPS file, school maths, and Flow (key encryption, costs, conversation replay, Word export) |
-| `npm run test:e2e` | Browser tests: setup wizard, sign-in, roles, Arabic, signup, lockout, claims, exports, share links, search, notifications, invitations, backups; and for businesses: invoicing and payments, quote to invoice, receiving and billing, storekeeper access, payroll and WPS, leave, balanced statements, backup of a business. On a new machine, run `npx playwright install chromium` first |
+| `npm run test:e2e` | Browser tests: setup wizard, workspace setup guide (business, school, home), sign-in, roles, Arabic, signup, lockout, claims, exports, share links, search, notifications, invitations, backups; and for businesses: invoicing and payments, quote to invoice, receiving and billing, storekeeper access, payroll and WPS, leave, balanced statements, backup of a business. On a new machine, run `npx playwright install chromium` first |
 | `npm run lint` | ESLint |
 | `npm run typecheck` | TypeScript check |
 
@@ -327,6 +382,9 @@ prisma/seed.ts              Demo data entry point → src/lib/demo/*
 src/proxy.ts                Optimistic sign-in gate (Next 16's renamed middleware)
 src/instrumentation.ts      Server start: prints the setup link on a fresh install
 src/app/setup/              The installation wizard
+src/app/w/[slug]/welcome/   The workspace setup guide (steps in src/lib/onboarding.ts)
+install/                    One-step installers: install.sh (macOS/Linux), install.ps1 (Windows)
+Dockerfile, docker/         Production image and its entrypoint; docker-compose.yml runs it
 src/lib/system/             Installation state, setup key, system checks
 scripts/                    Terminal installer (setup.ts) and reset-fresh.ts
 src/lib/auth/               Password hashing, sessions, and the Data Access Layer (who you are, what workspace)

@@ -43,6 +43,7 @@ import {
   NotebookPen,
   CalendarClock,
   SlidersHorizontal,
+  Rocket,
   type LucideIcon,
 } from "lucide-react";
 import type { MessageKey } from "./i18n";
@@ -116,6 +117,7 @@ export const NAV: NavItem[] = [
   { id: "staff-attendance", path: "hr/attendance", label: "nav.staffAttendance", desc: "modules.staffAttendance", icon: CalendarClock, group: "nav.groupPeople", types: ["school"], perms: ["hr.view", "school.teach", "claims.submit"], stage: "3" },
 
   // ── Settings (every workspace) ──
+  { id: "setup-guide", path: "welcome", label: "onboarding.nav", desc: "onboarding.navDesc", icon: Rocket, group: "nav.groupSettings", types: ALL, perms: ["workspace.manage"], stage: "4" },
   { id: "appearance", path: "settings/appearance", label: "nav.appearance", icon: Palette, group: "nav.groupSettings", types: ALL, stage: "1a" },
   { id: "profile", path: "settings/profile", label: "nav.profile", icon: User, group: "nav.groupSettings", types: ALL, stage: "1a" },
   { id: "workspace", path: "settings/workspace", label: "nav.workspace", desc: "modules.workspace", icon: UserCog, group: "nav.groupSettings", types: ALL, perms: ["workspace.manage"], stage: "1b" },
@@ -130,7 +132,7 @@ export const NAV: NavItem[] = [
 export const READY = new Set([
   "home-dashboard", "biz-dashboard", "school-dashboard", "appearance", "profile", "claims", "budgets", "bills", "things", "summary", "workspace", "members", "activity", "data",
   "customers", "quotations", "invoices", "payments-in", "suppliers", "purchase-orders", "purchase-bills", "payments-out", "items", "stock", "expenses", "reports", "accounts", "journals", "employees", "attendance", "leave", "payroll", "payslips",
-  "students", "guardians", "staff", "staff-attendance", "school-setup", "admissions", "classes", "student-attendance", "exams", "fees", "transport", "library", "announcements", "my-children", "campuses", "flow",
+  "students", "guardians", "staff", "staff-attendance", "school-setup", "admissions", "classes", "student-attendance", "exams", "fees", "transport", "library", "announcements", "my-children", "campuses", "flow", "setup-guide",
 ]);
 
 const GROUP_ORDER: MessageKey[] = [

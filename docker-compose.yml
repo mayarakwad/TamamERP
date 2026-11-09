@@ -1,0 +1,23 @@
+# Tamam · تمام on a server:   docker compose up -d
+# Then open http://<server>:3000 (put it behind HTTPS before real use) and follow the setup link
+# printed in the logs:   docker compose logs tamam
+services:
+  tamam:
+    build: .
+    image: tamam:1.0.0
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      # Optional: set your own secret (32+ random characters). If left empty, one is generated and kept in the data volume.
+      APP_SECRET: ""
+      # 1 = load the demo workspaces on first start instead of the setup wizard.
+      TAMAM_DEMO: "0"
+      # Only while testing over plain http on a LAN address; remove once Tamam is served over HTTPS.
+      # INSECURE_COOKIES: "1"
+    volumes:
+      - tamam-data:/app/data
+      - tamam-storage:/app/storage
+volumes:
+  tamam-data:
+  tamam-storage:

@@ -4,6 +4,7 @@
 import { enBiz } from "./en-biz";
 import { enSchool } from "./en-school";
 import { enFlow } from "./en-flow";
+import { enOnboarding } from "./en-onboarding";
 
 export const en = {
   app: {
@@ -452,7 +453,7 @@ export const en = {
     progressFinish: "Finishing up",
     doneTitle: "{name} is ready",
     doneBody: "You're signed in as the administrator. The setup wizard is now locked.",
-    openDashboard: "Open your dashboard",
+    openDashboard: "Set up your workspace",
     installFailed: "Installation didn't finish: {reason}",
     alreadyInstalled: "This server is already installed.",
     edit: "Edit",
@@ -913,6 +914,7 @@ export const en = {
   ...enBiz,
   ...enSchool,
   ...enFlow,
+  ...enOnboarding,
 } as const;
 
 type Widen<T> = T extends string ? string : { [K in keyof T]: Widen<T[K]> };
@@ -920,3 +922,4 @@ export type Messages = Widen<typeof en>;
 export type BizMessages = Widen<typeof enBiz>;
 export type SchoolMessages = Widen<typeof enSchool>;
 export type FlowMessages = Widen<typeof enFlow>;
+export type OnboardingMessages = Widen<typeof enOnboarding>;

@@ -2,6 +2,7 @@ import type { Messages } from "./en";
 import { arBiz } from "./ar-biz";
 import { arSchool } from "./ar-school";
 import { arFlow } from "./ar-flow";
+import { arOnboarding } from "./ar-onboarding";
 
 // الرسائل العربية. يجب أن تطابق بنية en.ts (يتحقق TypeScript من ذلك).
 
@@ -452,7 +453,7 @@ export const ar: Messages = {
     progressFinish: "اللمسات الأخيرة",
     doneTitle: "{name} جاهز",
     doneBody: "سجّلت الدخول بصفتك المسؤول، وقد أُغلق معالج الإعداد الآن.",
-    openDashboard: "افتح لوحة التحكم",
+    openDashboard: "إعداد مساحة العمل",
     installFailed: "لم يكتمل التثبيت: {reason}",
     alreadyInstalled: "تم تثبيت هذا الخادم بالفعل.",
     edit: "تعديل",
@@ -913,4 +914,5 @@ export const ar: Messages = {
   ...arBiz,
   ...arSchool,
   ...arFlow,
+  ...arOnboarding,
 };

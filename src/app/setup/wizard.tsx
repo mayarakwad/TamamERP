@@ -906,7 +906,8 @@ function Done({ name, slug }: { name: string; slug: string }) {
       </motion.span>
       <h1 className="mt-6 text-3xl font-semibold tracking-tight">{t("setup.doneTitle", { name })}</h1>
       <p className="mx-auto mt-2 max-w-md text-muted">{t("setup.doneBody")}</p>
-      <Button size="lg" className="mt-8" onClick={() => router.push(`/w/${slug}`)}>
+      {/* The new workspace continues with its own setup guide. */}
+      <Button size="lg" className="mt-8" onClick={() => router.push(`/w/${slug}/welcome`)}>
         {t("setup.openDashboard")}
       </Button>
     </motion.div>

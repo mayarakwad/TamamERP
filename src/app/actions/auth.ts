@@ -171,7 +171,8 @@ export async function signup(_prev: FormState, formData: FormData): Promise<Form
   await createSession(user.id);
   await audit({ orgId: org.id, userId: user.id, action: "workspace.created", entityType: "organization", entityId: org.id, summary: `Created ${org.name}`, summaryAr: `إنشاء ${org.nameAr ?? org.name}`, sensitive: true });
   await writePrefsCookie(parsePrefs({ locale: d.locale }));
-  redirect(`/w/${org.slug}`);
+  // A brand-new workspace starts with its setup guide.
+  redirect(`/w/${org.slug}/welcome`);
 }
 
 export async function switchWorkspace(slug: string) {

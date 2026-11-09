@@ -41,8 +41,8 @@ test("a fresh server walks through the setup wizard and locks it afterwards", as
   await page.getByRole("button", { name: /Install Tamam/ }).click();
 
   await expect(page.getByText("Doha Test ERP is ready")).toBeVisible({ timeout: 30_000 });
-  await page.getByRole("button", { name: /Open your dashboard/ }).click();
-  await expect(page).toHaveURL(/\/w\/test-household$/);
+  await page.getByRole("button", { name: /Set up your workspace/ }).click();
+  await expect(page).toHaveURL(/\/w\/test-household\/welcome$/);
   await expect(page).toHaveTitle(/Doha Test ERP/);
 
   await page.goto(`/setup?key=${key}`);

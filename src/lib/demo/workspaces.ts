@@ -173,6 +173,13 @@ export async function seedWorkspaces(db: Db, passwordHash: string, now = new Dat
   for (const [org, kind, color] of logos) {
     await db.organization.update({ where: { id: org.id }, data: { logoPath: await writeDemoLogo(org.id, kind, color), brandColor: color } });
   }
+  // The demo workspaces are already set up: no setup guide.
+  for (const org of [home, biz, school]) {
+    const current = await db.organization.findUniqueOrThrow({ where: { id: org.id }, select: { settings: true } });
+    const settings = (current.settings && typeof current.settings === "object" ? current.settings : {}) as Record<string, unknown>;
+    const at = new Date().toISOString();
+    await db.organization.update({ where: { id: org.id }, data: { settings: { ...settings, onboarding: { startedAt: at, finishedAt: at } } } });
+  }
 
   return { users, home, biz, school };
 }
