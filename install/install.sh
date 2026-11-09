@@ -14,6 +14,7 @@
 #   --no-start       install only; don't start the server
 #   --background     start the server in the background and return
 set -euo pipefail
+export PRISMA_HIDE_UPDATE_MESSAGE=1 NEXT_TELEMETRY_DISABLED=1
 
 REPO="mayarakwad/TamamERP"
 DIR="tamam"
@@ -92,7 +93,7 @@ ok "Dependencies installed"
 
 # 4. Secret, folders, database, and the setup key or demo data
 step "Preparing Tamam"
-npm run --silent setup -- "--$MODE"
+npm run --silent setup -- "--$MODE" --installer
 
 # 5. A local install is opened at http://localhost, so session cookies can't require HTTPS.
 if ! grep -q '^INSECURE_COOKIES=' .env; then

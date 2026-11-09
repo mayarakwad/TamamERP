@@ -3,6 +3,7 @@
 //   npm run setup              guided: prepares the server, then asks how to start
 //   npm run setup -- --demo    load the demo workspaces, no questions
 //   npm run setup -- --wizard  prepare for the browser setup wizard, no questions
+//   --installer                used by install/install.sh and install.ps1: they print their own next steps
 
 import { execSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
@@ -96,12 +97,17 @@ async function main() {
     if (mode === "demo") {
       await db.$disconnect();
       execSync("npx tsx prisma/seed.ts", { stdio: "inherit" });
+      if (args.has("--installer")) return;
       console.log(`\n  ${green("Ready.")} Start the app with ${bold("npm run dev")} and open ${bold("http://localhost:3000")}`);
       console.log(`  Click any demo account on the sign-in page (password ${bold("demo1234")}).\n`);
       return;
     }
 
     const key = await ensureSetupKey(db);
+    if (args.has("--installer")) {
+      ok("Setup wizard is ready");
+      return;
+    }
     const port = process.env.PORT ?? "3000";
     const line = "─".repeat(64);
     console.log(`\n${line}`);

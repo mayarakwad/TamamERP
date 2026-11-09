@@ -15,6 +15,8 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+$env:PRISMA_HIDE_UPDATE_MESSAGE = "1"
+$env:NEXT_TELEMETRY_DISABLED = "1"
 $Repo = "mayarakwad/TamamERP"
 $Mode = if ($Demo) { "demo" } else { "wizard" }
 
@@ -74,7 +76,7 @@ Ok "Dependencies installed"
 
 # 4. Secret, folders, database, and the setup key or demo data
 Step "Preparing Tamam"
-npm run --silent setup -- "--$Mode"
+npm run --silent setup -- "--$Mode" --installer
 if ($LASTEXITCODE -ne 0) { Fail "Setup failed (see above)." }
 
 # 5. A local install is opened at http://localhost, so session cookies can't require HTTPS.
