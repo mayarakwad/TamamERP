@@ -13,7 +13,7 @@ COPY . .
 # Build against an empty, migrated database (pages that read settings at build time need the tables), then drop it.
 RUN mkdir -p data storage && npx prisma generate && DATABASE_URL=file:./data/build.db npx prisma migrate deploy \
     && DATABASE_URL=file:./data/build.db APP_SECRET=build-time-only-secret-not-used-at-runtime npm run build \
-    && rm -f data/build.db*
+    && rm -rf data/build.db* .next/cache
 
 FROM node:22-bookworm-slim
 WORKDIR /app

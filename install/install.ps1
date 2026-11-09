@@ -54,8 +54,9 @@ else {
   } else {
     $url = if ($Version) { "https://github.com/$Repo/archive/refs/tags/$Version.zip" } else { "https://github.com/$Repo/archive/refs/heads/main.zip" }
     if (-not $Version) { $Version = "main" }
-    $zip = Join-Path $env:TEMP "tamam-$([guid]::NewGuid()).zip"
-    $tmp = Join-Path $env:TEMP "tamam-$([guid]::NewGuid())"
+    $temp = [System.IO.Path]::GetTempPath()
+    $zip = Join-Path $temp "tamam-$([guid]::NewGuid()).zip"
+    $tmp = Join-Path $temp "tamam-$([guid]::NewGuid())"
     Invoke-WebRequest $url -OutFile $zip -UseBasicParsing
     Expand-Archive $zip -DestinationPath $tmp
     $inner = Get-ChildItem $tmp | Select-Object -First 1
