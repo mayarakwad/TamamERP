@@ -71,8 +71,12 @@ export async function markdownToDocx(markdown: string, title: string): Promise<B
   if (title) children.push(para(title, { heading: HeadingLevel.TITLE, docRtl }));
   const lines = markdown.replace(/\r/g, "").split("\n");
   let buffer: string[] = [];
+  // Lines of one paragraph keep their line breaks (a letter's sign-off, an address).
   const flush = () => {
-    if (buffer.length) children.push(para(buffer.join(" "), { docRtl }));
+    if (!buffer.length) return;
+    const rtl = buffer.some((l) => ARABIC.test(l)) || docRtl;
+    const lineRuns = buffer.flatMap((line, i) => [...(i ? [new TextRun({ text: "", break: 1 })] : []), ...runs(line, rtl, { size: 22, sizeComplexScript: 22 })]);
+    children.push(new Paragraph({ bidirectional: rtl, alignment: AlignmentType.START, spacing: { after: 100 }, children: lineRuns }));
     buffer = [];
   };
   for (let i = 0; i < lines.length; i++) {

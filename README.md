@@ -299,6 +299,7 @@ After `npm run setup:demo`, open <http://localhost:3000> and click any account u
 **How it was checked:**
 - Unit tests: key encryption (round trip, other workspace, tampering, changed secret, hints), cost maths, the exact replay of a conversation to Claude and to OpenAI-style providers, the page context, and the Word export.
 - End-to-end tests with the scripted test provider: the "not connected" states, saving a key that never appears in the page, answering from the school's data with a table and a Word download, a proposal that changes nothing until **Publish**, a parent who can't find other people's children, filling an open claim form, usage tracking and the spending limit pausing Flow.
+- Office files: 24 real exports (Excel and Word, English and Arabic, from all three kinds of workspace, plus Flow's Word drafts) were checked part by part: each is a valid package, every XML part parses, every internal link and content type is in place, and the Arabic ones are right-to-left. Samples were also rendered in LibreOffice. They haven't been opened in Microsoft Office itself, which wasn't available here.
 - The real Anthropic, OpenAI and Google endpoints were called with made-up keys and answered "key refused", so the server reaches them and reports that properly. There was no real AI key in this environment, so a full conversation with a real model hasn't been run yet (see the limitations below).
 
 **Known limitations**

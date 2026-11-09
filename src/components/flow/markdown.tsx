@@ -28,7 +28,7 @@ const components: Components = {
   td: ({ children }) => <td className="border-t border-line px-2.5 py-1.5 align-top tabular-nums">{children}</td>,
   ul: ({ children }) => <ul className="my-1.5 list-disc space-y-0.5 ps-5">{children}</ul>,
   ol: ({ children }) => <ol className="my-1.5 list-decimal space-y-0.5 ps-5">{children}</ol>,
-  p: ({ children }) => <p className="my-1.5 leading-relaxed first:mt-0 last:mb-0">{children}</p>,
+  p: ({ children }) => <p className="my-1.5 leading-relaxed whitespace-pre-line first:mt-0 last:mb-0">{children}</p>,
   h1: ({ children }) => <h3 className="mt-3 mb-1 text-base font-semibold">{children}</h3>,
   h2: ({ children }) => <h3 className="mt-3 mb-1 text-[0.95rem] font-semibold">{children}</h3>,
   h3: ({ children }) => <h4 className="mt-2.5 mb-1 font-semibold">{children}</h4>,

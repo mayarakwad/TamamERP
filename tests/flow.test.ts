@@ -145,4 +145,10 @@ describe("drafts download as Word", () => {
     expect(xml).toContain("يوم رياضي سعيد");
     expect(xml).toContain("<w:bidi/>");
   });
+
+  it("keeps a letter's line breaks", async () => {
+    const xml = strFromU8(unzipSync(new Uint8Array(await markdownToDocx("With thanks,\nAl Manara International School", "")))["word/document.xml"]);
+    expect(xml).toContain("<w:br/>");
+    expect(xml).toContain("Al Manara International School");
+  });
 });
